@@ -1,0 +1,6 @@
+`${member.displayName}, it appears that your nation ${nation} has ceased to exist! You have been given the CTE role. To remove the CTE role:
+1. Restore your nation and move it to The Leftist Assembly or its embassies
+2. Leave and rejoin The Leftist Assembly server
+3. Follow the instructions that will be sent to you.
+
+Contact The Comrade#4859 or telegram Nottinhaps if you have any questions.`

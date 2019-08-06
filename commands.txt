@@ -1,0 +1,110 @@
+`!8ball `
+
+**Usage:** No arguments are required. However, a question can be appended at the end of the command.
+**Details:** The command returns a random answer to a yes-or-no question. It can return one of 20 possible answers.
+**Examples:** 
+`!8ball`
+`!8ball Am I lucky today?`
+
+
+`!help [Command]`
+
+**Usage:** The specified command must have the starting "!" removed. Without a command, the function will return information on all commands.
+**Details:** The command returns how to use, the purpose of, and examples of using a specified command. If a command is not specified, an overview of the purpose of all commands will be displayed.
+**Examples:**
+`!help`
+`!help 8ball`
+`!help roll`
+
+
+`!ncensus [Census ID] [Nation]`
+**Usage:** The specified Census ID must be an integer between 0 and 85. The specified nation name must have the spaces replaced with under scrolls. The nation name entered is case-insensitive. The Census IDs for each census can be found in the Nation Trending and the World Census pages.
+**Details:** The command returns the score of the specified nation in the specified World Census. It will also display the rank and percentile of the nation in the region it resides in and the world as a whole.
+**Examples:**
+`!ncensus 12 leftist_assembly_founder`
+`!ncensus 71 Notinhaps`
+`!ncensus 66 fedele`
+
+
+`!ncompare [Census ID] [Nation] [Nation 2] [Nation 3] [Nation 4] [Nation 5]`
+**Usage:** The specified Census ID must be an integer between 0 and 85. The specified nation names must have the spaces replaced with under scrolls. The nation names entered are case-insensitive. Between 2 to 5 nations can be entered at once. The Census IDs for each census can be found in the Nation Trending and the World Census pages.
+**Details:** The command returns the nation that performs the best in a given census out of all those compared. It also ranks the nations with each other and displays their scores in the given census.
+**Examples:**
+`!ncompare 71 the_final_horseman argentigrad`
+`!ncompare 80 cedoria llorens libertasnia auven new_lonopolian_empire`
+
+
+`!nextholiday `
+**Usage:** No arguments are required.
+**Details:** The command returns the name of the next holiday and the number of days until the holiday, where "holiday" is defined under the Holiday Act. The number of days is calculated using UTC time (e.g. if it is 23:00 28/8 UTC time, then to bot will say that it is 1 day from August Farce Day, even though it is August Farce Day elsewhere).
+**Examples:**
+`!nextholiday`
+
+
+`!ninfo [Nation]`
+**Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered is case-insensitive.
+**Details:** The command returns the flag, full name, motto, population, what it is notable for, region, WA type, largest industry, influence, endorsements (both as a number and as a percentage of WA nations in their region), average income, average income of poor, and how long ago it was founded.
+**Examples:**
+`!ninfo testlandia`
+`!ninfo hecknamistan`
+`!ninfo kavagrad`
+
+
+`!npolicy [Nation]`
+**Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered is case-insensitive.
+**Details:** The command returns a text file, with the title, banner URL, and description of each policy the nation has.
+**Examples:**
+`!npolicy caracasus`
+`!npolicy south_miruva`
+`!npolicy ransium`
+
+
+`!quote `
+**Usage:** No arguments are required.
+**Details:** The command returns a random quote from leftist leaders. There are 192 possible quotes that can be returned.
+**Examples:**
+`!quote`
+
+
+`!rcensus [Census ID] [Region]`
+**Usage:** The specified Census ID must be an integer between 0 and 85 or 255. The specified region name must have the spaces replaced with under scrolls. The region name entered is case-insensitive. If a region name is not specified, Unity Machine will find information about The Leftist Assembly. The Census IDs for each census can be found in the Nation Trending and the World Census pages.
+**Details:** The command returns the average score of all nation in the specified region in the specified World Census. It will also display the rank and percentile of the region in the world as a whole.
+**Examples:**
+`!rcensus 255`
+`!rcensus 0 democratic_socialist_assembly`
+`!recensus 66 forest`
+
+
+`!rinfo [Region]`
+**Usage:** The specified region name must have the spaces replaced with under scrolls. The region name entered is case-insensitive. If a region name is not specified, Unity Machine will find information about The Leftist Assembly.
+**Details:** The command returns the flag, number of nations, number of WA nations, the name of the current WA Delegate, the number of nations endorsing the delegate, the name of the founder, how long ago the region was founded, and the power of a specified region.
+**Examples:**
+`!rinfo`
+`!rinfo the_internationale`
+`!rinfo the_communist_bloc`
+
+
+`!rip [Noun]`
+**Usage:** The entered noun can contain spaces. If a noun is not specified, then Unity Machine will send a generic message.
+**Details:** The command sends a message, starting with "Rest in Peace, " and ends with the specified noun. If a noun is not specified, then Unity Machine will send "Rest in Peace.".
+**Examples:**
+`!rip`
+*Returns "Rest in Peace."*
+`!rip Atealia`
+*Returns "Rest in Peace, Atealia."*
+
+
+`!roll [Dice Expression]`
+**Usage:** The dice expression uses RPG dice notation (e.g. `3d6` means "roll 3 six-sided dice). Dice notation where only 1 die is rolled can have the starting "1" removed (e.g. `1d20` can be shortened into `d20`). Addition (+) and subtraction (-) can be used in the dice expression. Up to 10,000 dice can be rolled at once, with each die having up to 1,000,000,000,000 faces.
+**Details:** The command simulates rolling dice and calculates what the user rolled based on the given dice expression.
+**Examples:**
+`!roll d20`
+`!roll 2d8`
+`!roll d6-d6`
+
+
+`!verifyme [Nation] [Token]`
+**Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered is case-insensitive. The token can be found here: https://www.nationstates.net/page=verify_login This command only works in Direct Messages. After successfully verifying, attempting to run this command again results in an error.
+**Details:** The command verifies that a Discord User owns a nation, and allows them to read and send messages. If the nation is in The Leftist Assembly, they will be given the Assemblian role. If the nation is in an embassy of The Leftist Assembly, they will be given the Visitor role. Otherwise, they will not be verified successfully.
+**Examples:**
+`!verifyme nottinhaps XsOIoNxQWtAlZfIeRgx8obMgJWwOA6znSDmA9xJQKBA`
