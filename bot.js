@@ -614,7 +614,7 @@ client.on('message', receivedMessage => {
 
 client.on('ready', () => {
     console.log("Connected as " + client.user.tag);  // Confirm connection
-    client.user.setActivity("Experimental bot for testing purposes");
+    client.user.setActivity('Type "!help" to get info on all commands');
     TLAServer = client.guilds.array()[0];
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
 
