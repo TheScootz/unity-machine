@@ -4,6 +4,11 @@ const he = require('he');
 const moment = require('moment');
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+const http = require("http");
+
+setInterval(function() {
+    http.get("http://unity-machine.herokuapp.com");
+}, 300000); // Ping Unity Machine every 5 minutes (300000 ms)
 
 const client = new Discord.Client()
 
