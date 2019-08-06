@@ -15,7 +15,7 @@ function getRandomObject(ary) {
 
 // Read file and split by newline
 function openFile(filename) {
-    fileContent = fs.readFileSync("unity-machine/" + filename); // Open file
+    fileContent = fs.readFileSync(filename); // Open file
     fileContent = fileContent.toString(); // Convert bytes to string
     fileContent = fileContent.split("\n");
     return fileContent
@@ -582,10 +582,10 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send("Error: Too many arguments. Use `!help` to find information on all commands.");
         }
         if (arguments.length === 0) {
-            let help = fs.readFileSync("unity-machine/help.txt").toString()
+            let help = fs.readFileSync("help.txt").toString()
             receivedMessage.channel.send(help);
         } else {
-            let commands = fs.readFileSync("unity-machine/commands.txt").toString().split("\n\n\n"); // Read commands.txt, convert to string, split by triple newline
+            let commands = fs.readFileSync("commands.txt").toString().split("\n\n\n"); // Read commands.txt, convert to string, split by triple newline
             let command = commands.find(c => c.substr(2).split(" ")[0] === arguments[0]);
             if (!command) {
                 receivedMessage.channel.send("Error: Command does not exist. Please use `!help` to find information on all commands.");
@@ -620,7 +620,6 @@ client.on('ready', () => {
 
     function CTE() {
         const nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations")[0].split(",");
-        fs.writeFileSync("nations.txt", nations);
         if (typeof(nations) === 'number') {
             client.users.get("420734859418533889").send(`Unable to get all nations in the world. Error code: ${nations}`);
             return
@@ -633,7 +632,7 @@ client.on('ready', () => {
                 const rawNation = nation.toLowerCase().replace(" ", "_");
 
                 if (! nations.some(nation => nation === rawNation)) {
-                    const CTEMessage = eval(fs.readFileSync("unity-machine/cte_message.txt").toString()); // Add interpolation for text in cte_message.txt
+                    const CTEMessage = eval(fs.readFileSync("cte_message.txt").toString()); // Add interpolation for text in cte_message.txt
                     member.send(CTEMessage);
 
                     if (member.roles.find(role => role.name === "Assemblian")) { // User is marked as Assemblian
@@ -657,7 +656,7 @@ client.on('ready', () => {
 let unverifiedRole;
 client.on("guildMemberAdd", newMember => {
     newMember.addRole(unverifiedRole); // Add unverified role
-    const welcomeMessage = eval(fs.readFileSync("unity-machine/welcomeMessage.txt").toString()); // Add interpolation for text in welcomeMessage.txt
+    const welcomeMessage = eval(fs.readFileSync("welcomeMessage.txt").toString()); // Add interpolation for text in welcomeMessage.txt
     newMember.user.send(welcomeMessage);
 });
 
@@ -668,6 +667,6 @@ client.on("guildMemberRemove", member => {
     }
 })
 
-const bot_secret_token = "Whq35JIcrAscR1EBYYBKzD61gTUp5UhT";
+const bot_secret_token = "NjA4Mjc3ODU4NzQ1NDUwNDk3.XUmGjA.4OA6wyiw-pl_iQeew9OpFtjVocw";
 
 client.login(bot_secret_token);
