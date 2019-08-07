@@ -7,6 +7,16 @@
 `!8ball Am I lucky today?`
 
 
+`!censusnum [Census Name]`
+**Usage:** The census name entered must be exactly the same as the one found in the Nation Rank page.
+**Details:** The command returns the Census ID number of a given Census.
+**Examples:**
+`!censusnum Health Development Index`
+*Returns "68"*
+`!censusnum Industry: Book Publishing`
+*Returns "24"*
+
+
 `!help [Command]`
 
 **Usage:** The specified command must have the starting "!" removed. Without a command, the function will return information on all commands.
@@ -61,7 +71,7 @@
 
 `!quote `
 **Usage:** No arguments are required.
-**Details:** The command returns a random quote from leftist leaders. There are 192 possible quotes that can be returned.
+**Details:** The command returns a random quote from leftist leaders. There are 94 possible quotes that can be returned.
 **Examples:**
 `!quote`
 
