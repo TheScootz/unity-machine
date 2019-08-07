@@ -12,7 +12,7 @@
 **Details:** The command returns the Census ID number of a given Census.
 **Examples:**
 `!censusnum Human Development Index`
-*Returns "The census number forHuman Development Index is 68."*
+*Returns "The census number for Human Development Index is 68."*
 `!censusnum Industry: Book Publishing`
 *Returns "The census number for Industry: Basket Weaving is 24."*
 
