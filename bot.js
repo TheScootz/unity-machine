@@ -523,7 +523,17 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send(`${nextHoliday.name} is only ${difference} days away!`)
         }
 
-     // Verify nattion
+        // Find census number
+    } else if (primaryCommand === "censusnum") {
+        arguments = arguments.join(" ");
+        const index = censusNames.indexOf(arguments);
+        if (index === -1) {
+            receivedMessage.channel.send("Error: Census not found.")
+        } else {
+            receivedMessage.channel.send(`The census number for ${arguments} is ${index}.`);
+        }
+
+     // Verify nation
     } else if (primaryCommand === "verifyme") {
         if (arguments.length > 2) {
             receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
@@ -562,7 +572,7 @@ function processCommand(receivedMessage) {
             guildMember.addRole(TLAServer.roles.find(role => role.name === "Assemblian")); // Assemblian role
         } else if (embassies.includes(responseObject.region)) {
             guildMember.addRole(TLAServer.roles.find(role => role.name === "Visitor")); // Visitor role
-        } else { // Not in TLA or embassy  regions
+        } else { // Not in TLA or embassy regions
             receivedMessage.channel.send("Error: Your name is not in The Leftist Assembly or its embassies. Please contact the server admins.");
             return
         }
