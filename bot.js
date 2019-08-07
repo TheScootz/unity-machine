@@ -95,7 +95,7 @@ function processCommand(receivedMessage) {
         let resultsEachRoll = [];
         diceExp.forEach(element => {
             element = element.split("d");
-            if (element.length > 0) {
+            if (element.length > 1) {
                 const diceRolled = element[0] === '' ? 1 : Number(element[0]);
                 const faces = element[1];
                 let diceString = [];
@@ -109,7 +109,7 @@ function processCommand(receivedMessage) {
                 results.push(sumDice);
                 resultsEachRoll.push(diceString);
             } else {
-                results.push(element);
+                results.push(element[0]);
             }
         });
 
