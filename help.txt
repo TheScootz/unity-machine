@@ -19,4 +19,4 @@ __Other commands__
 `!roll`: Simulates dice roll
 `!verifyme`: Verifies a user and allows them to write and read messages
 
-Created by Llorens and Nottinhaps. Name "Unity Machine" suggested by Hecknamistan. Contact The Comrade#4859 or telegram Nottinhaps if you have any questions.
+Created by Nottinhaps. Contact The Comrade#4859 or telegram Nottinhaps if you have any questions.
