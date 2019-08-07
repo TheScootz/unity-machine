@@ -8,7 +8,7 @@ __Nation info__
 
 __Region info__
 `!rcensus`: Get performance of a region in a census
-`!rinfo`: Get information about a nation
+`!rinfo`: Get information about a region
 
 __Other commands__
 `!8ball`: Get yes-no response to question
