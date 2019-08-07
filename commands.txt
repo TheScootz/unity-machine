@@ -11,10 +11,10 @@
 **Usage:** The census name entered must be exactly the same as the one found in the Nation Rank page.
 **Details:** The command returns the Census ID number of a given Census.
 **Examples:**
-`!censusnum Health Development Index`
-*Returns "68"*
+`!censusnum Human Development Index`
+*Returns "The census number forHuman Development Index is 68."*
 `!censusnum Industry: Book Publishing`
-*Returns "24"*
+*Returns "The census number for Industry: Basket Weaving is 24."*
 
 
 `!help [Command]`
