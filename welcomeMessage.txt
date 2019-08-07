@@ -2,8 +2,7 @@
 
 1. Go to the following link: https://www.nationstates.net/page=verify_login
 2. Click 'Copy to clipboard'
-3. Type the following into this DM channel: \`!verifyme [nation]\` where your nation is your nation. Replace under scrolls with spaces within your nation name.
-4. Press space, then crtl+V on Windows or Linux, or cmd+V on Mac, then press enter.
+3. Send the following command into this DM channel: \`!verifyme [nation] [token]\`  For example, '!verifyme unity_machine hdiicu_57chjnd_e_qg21bv2b_k'.
 
 That's all you need to do to get yourself confirmed!
 
