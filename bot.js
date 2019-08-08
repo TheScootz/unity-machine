@@ -577,6 +577,13 @@ function processCommand(receivedMessage) {
             return
         }
         guildMember.addRole(TLAServer.roles.find(role => role.name === "Verified"));
+
+        if (guildMember.roles.find(role => role.name === "Unverified")) { // Either user is Unverified or CTE to use this command
+            guildMember.removeRole(guildMember.roles.find(role => role.name === "Unverified"));
+        } else {
+            guildMember.removeRole(guildMember.roles.find(role => role.name === "CTE"));
+        }
+
         guildMember.removeRole(guildMember.roles.find(role => role.name === "Unverified"));
         TLAServer.createRole({name: `${responseObject.nation} \u2713`, color: 5533306}) // #546e7a
             .then(role => guildMember.addRole(role)); // Create role then add role
@@ -636,7 +643,7 @@ client.on('ready', () => {
         }
 
         TLAServer.members.forEach(member => {
-            if (member.roles.find(role => role.name === "Verified") && ! member.roles.find(role => role.name === "CTE")) { // User is verified but not marked as CTE yet
+            if (member.roles.find(role => role.name === "Verified")) { // User is verified but not marked as CTE yet
                 const nationRole = member.roles.find(role => role.hexColor === "#546e7a");
                 const nation = nationRole.name.slice(0, -2);
                 const rawNation = nation.toLowerCase().replace(/ /g, "_");
@@ -652,6 +659,8 @@ client.on('ready', () => {
                     }
                     member.removeRole(nationRole);
                     nationRole.delete();
+                    
+                    member.removeRole(TLAServer.roles.find(role => role.name === 'Verified'));
                     member.addRole(TLAServer.roles.find(role => role.name === "CTE"));
                 }
             }
@@ -675,7 +684,7 @@ client.on("guildMemberAdd", newMember => {
 });
 
 client.on("guildMemberRemove", member => {
-    if (member.roles.find(role => role.name === "Verified") && ! member.roles.find(role => role.name === "CTE")) {
+    if (member.roles.find(role => role.name === "Verified")) {
         const nationRole = member.roles.find(role => role.hexColor === "#546e7a");
         nationRole.delete();
     }

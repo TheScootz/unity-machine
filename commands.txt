@@ -114,7 +114,7 @@
 
 
 `!verifyme [Nation] [Token]`
-**Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered is case-insensitive. The token can be found here: https://www.nationstates.net/page=verify_login This command only works in Direct Messages. After successfully verifying, attempting to run this command again results in an error.
+**Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered is case-insensitive. The token can be found here: https://www.nationstates.net/page=verify_login This command only works in Direct Messages. This command only works on users with the Unverified or CTE role.
 **Details:** The command verifies that a Discord User owns a nation, and allows them to read and send messages. If the nation is in The Leftist Assembly, they will be given the Assemblian role. If the nation is in an embassy of The Leftist Assembly, they will be given the Visitor role. Otherwise, they will not be verified successfully.
 **Examples:**
 `!verifyme nottinhaps XsOIoNxQWtAlZfIeRgx8obMgJWwOA6znSDmA9xJQKBA`
