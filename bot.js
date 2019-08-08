@@ -627,17 +627,6 @@ client.on('ready', () => {
     client.user.setActivity('Type "!help" to get info on all commands');
     TLAServer = client.guilds.array()[0];
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
-    tempRole = TLAServer.roles.find(role => role.name === 'Temporary');
-
-    TLAServer.members.forEach(member => {
-        if (member.roles.find(role => role === tempRole)) {
-            member.removeRole(tempRole);
-            member.addRole(unverifiedRole);
-            const tempMessage = eval(fs.readFileSync("temp_message.txt").toString());
-            member.send(tempMessage);
-        }
-    });
-    tempRole.delete();
 
     function CTE() { // Cycle through all users and make sure their nation has not CTE'd
         const nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations")[0].split(",");
