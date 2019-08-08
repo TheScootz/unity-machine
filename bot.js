@@ -627,8 +627,19 @@ client.on('ready', () => {
     client.user.setActivity('Type "!help" to get info on all commands');
     TLAServer = client.guilds.array()[0];
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
+    tempRole = TLAServer.roles.find(role => role.name === 'Temporary');
 
-    function CTE() {
+    TLAServer.members.forEach(member => {
+        if (member.roles.find(role => role === tempRole)) {
+            member.removeRole(tempRole);
+            member.addRole(unverifiedRole);
+            const tempMessage = eval(fs.readFileSync("temp_message.txt").toString());
+            member.send(tempMessage);
+        }
+    });
+    tempRole.delete();
+
+    function CTE() { // Cycle through all users and make sure their nation has not CTE'd
         const nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations")[0].split(",");
         if (typeof(nations) === 'number') {
             client.users.get("420734859418533889").send(`Unable to get all nations in the world. Error code: ${nations}`);
@@ -660,7 +671,11 @@ client.on('ready', () => {
 
     CTE();
     console.log("Ready to take commands!");
-    setInterval(() => CTE(), 43200000);
+    setInterval(() => {
+        console.log("Giving CTE role...")
+        CTE()
+        console.log("Ready to take commands!")
+    }, 43200000);
 });
 
 let unverifiedRole;
