@@ -639,7 +639,7 @@ client.on('ready', () => {
             if (member.roles.find(role => role.name === "Verified") && ! member.roles.find(role => role.name === "CTE")) { // User is verified but not marked as CTE yet
                 const nationRole = member.roles.find(role => role.hexColor === "#546e7a");
                 const nation = nationRole.name.slice(0, -2);
-                const rawNation = nation.toLowerCase().replace(" ", "_");
+                const rawNation = nation.toLowerCase().replace(/ /g, "_");
 
                 if (! nations.some(nation => nation === rawNation)) {
                     const CTEMessage = eval(fs.readFileSync("cte_message.txt").toString()); // Add interpolation for text in cte_message.txt
