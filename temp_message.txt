@@ -1,0 +1,9 @@
+`Hi ${member.displayName}, I'm your new bot Unity Machine! You have been removed from The Leftist Assembly because you had the "Temporary" role, but you can verify yourself to rejoin the server. To access the server, you need to follow these steps:
+
+1. Go to the following link: https://www.nationstates.net/page=verify_login
+2. Click 'Copy to clipboard'
+3. Type the following into this DM channel: \`!verifyme [nation] [token]\`. For example, '!verifyme unity_machine hdiicu_57chjnd_e_qg21bv2b_k'.
+
+That's all you need to do to get yourself confirmed!
+
+Contact The Comrade#4859 or telegram Nottinhaps if you have any questions.`
