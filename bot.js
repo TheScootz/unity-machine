@@ -567,14 +567,10 @@ function processCommand(receivedMessage) {
             return;
         }
 
-        const embassies = openFile("embassies.txt");
         if (responseObject.region === "The Leftist Assembly") {
             guildMember.addRole(TLAServer.roles.find(role => role.name === "Assemblian")); // Assemblian role
-        } else if (embassies.includes(responseObject.region)) {
+        } else {
             guildMember.addRole(TLAServer.roles.find(role => role.name === "Visitor")); // Visitor role
-        } else { // Not in TLA or embassy regions
-            receivedMessage.channel.send("Error: Your name is not in The Leftist Assembly or its embassies. Please contact the server admins.");
-            return
         }
         guildMember.addRole(TLAServer.roles.find(role => role.name === "Verified"));
 
