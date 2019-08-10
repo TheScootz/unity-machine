@@ -562,11 +562,16 @@ function processCommand(receivedMessage) {
     
         guildMember = TLAServer.member(receivedMessage.author);
         pronounRoles.forEach(prole => {
-            if (guildMember.roles.find(role => role === prole)) { // Member has pronoun role
+            if (guildMember.roles.find(role => role === prole)  && ! arguments.includes(prole.name)) { // Member has pronoun role and not 
                 guildMember.removeRole(prole);
             }
         });
-        arguments.forEach(rolename => guildMember.addRole(pronounRoles.find(role => role.name === rolename)));
+
+        arguments.forEach(rolename => {
+            if (! guildMember.roles.find(role => role.name === rolename)) { // If user does not already have role
+                guildMember.addRole(pronounRoles.find(role => role.name === rolename));
+            }
+        });
         const argumentsString = arguments.join(" and ");
         if (arguments.length === 0) {
             receivedMessage.channel.send("Removed all pronoun roles!");
@@ -576,7 +581,7 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send(`Added ${argumentsString} roles!`);
         }
 
-        // Compare multiple regions
+     // Compare multiple regions
     } else if (primaryCommand === "rcompare") {
         if (arguments.length < 3) {
             receivedMessage.channel.send(`Error: At least 3 arguments are required with the !rcompare command. ${helpPrimaryCommand}`);
