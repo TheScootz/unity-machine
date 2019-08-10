@@ -2,8 +2,11 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const he = require('he');
 const moment = require('moment');
+const MongoClient = require('mongodb').MongoClient;
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+
+const mongoUrl = process.env.MONGODB_URI;
 
 const client = new Discord.Client()
 
@@ -75,19 +78,23 @@ function processCommand(receivedMessage) {
             return
         }
 
-        numDice = 0;
+        let numDice = 0;
+        let tooManyFaces = false;
         diceExp.forEach(element => {
             element = element.split("d");
             if (element.length === 2) {
                 numDice += element[0] === '' ? 1 : Number(element[0]); // If element[0] is blank, then the number of dice rolled is 1.
                 if (Number(element[1]) > 1000000000000) { // Do not allow rolling beyond 1 trillion
                     receivedMessage.channel.send("Error: Too many faces.")
-                    return
+                    tooManyFaces = true;
                 }
             }
        });
         if (numDice > 10000) {
             console.log("Error: You are rolling too many dice at once.");
+            return
+        }
+        if (tooManyFaces) { // If there are too many faces on one die
             return
         }
 
@@ -380,7 +387,7 @@ function processCommand(receivedMessage) {
         receivedMessage.channel.send({files: [filename]});
         setTimeout(filename => fs.unlinkSync(filename), 10, filename); // Delay 10 ms to allow time for file to upload before deleting
 
-
+     // Find performance of region in census
     } else if (primaryCommand === "rcensus") {
         if (arguments.length > 2) {
             receivedMessage.channel.send(`Error: Too many arguments. Make sure you have replaced spaces with underscrolls. ${helpPrimaryCommand}`);
@@ -533,6 +540,84 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send(`The census number for ${arguments} is ${index}.`);
         }
 
+     // Change pronoun
+    } else if (primaryCommand === "pronoun") {
+        pronounRoles = TLAServer.roles.filter(role => role.hexColor === "#dddddd");
+        arguments.forEach(rolename => {
+            if (! pronounRoles.find(role => role.name === rolename)) { // Pronoun Role name does not exist
+                receivedMessage.channel.send(`Error: "${rolename}" does not exist.`)
+            }
+        });
+        if (! arguments.every(rolename => pronounRoles.find(role => role.name === rolename))) {
+            return
+        }
+    
+        guildMember = TLAServer.member(receivedMessage.author);
+        pronounRoles.forEach(prole => {
+            if (guildMember.roles.find(role => role === prole)) { // Member has pronoun role
+                guildMember.removeRole(prole);
+            }
+        });
+        arguments.forEach(rolename => guildMember.addRole(pronounRoles.find(role => role.name === rolename)));
+
+        // Compare multiple regions
+    } else if (primaryCommand === "rcompare") {
+        if (arguments.length < 3) {
+            receivedMessage.channel.send(`Error: At least 3 arguments are required with the !rcompare command. ${helpPrimaryCommand}`);
+            return
+        }
+        if (arguments.length > 6) {
+            receivedMessage.channel.send(`Error: Over maximum number of 5 regions. Make sure you have replaced spaces with underscrolls. ${helpPrimaryCommand}`);
+            return
+        }
+
+        let censusID = arguments[0];
+        const regions = arguments.slice(1);
+        if (! (Number.isInteger(Number(censusID)) && ((0 <= censusID && censusID <= 85) ||Number(censusID) === 255))) {
+            receivedMessage.channel.send(`Error: Invalid Census ID "${censusID}". ${helpPrimaryCommand}`);
+            return
+        }
+
+        const regionLinks = {};
+
+        regions.forEach(region => regionLinks[region] = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region};q=name+census;scale=${censusID};mode=score`)
+        
+        const keys = Object.keys(regionLinks);
+        let scores = []; // Array of all scores
+        let regionScores = []; // Array containing objects of region and score
+        regionNames = []; // Array of all region "proper" names
+        keys.forEach(key => { // Iterate over all requested regions
+            response = request(regionLinks[key]);
+            if (typeof(response) === 'number') { // Error
+                if (response === 404) {
+                receivedMessage.channel.send(`Error: "${key}" was not found.`);
+                } else {
+                    receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`);
+                }
+                return
+            }
+            regionName = response[0];
+            score =  Number(response[1]);
+            regionScores.push({region: regionName, score: score});
+            scores.push(score);
+            regionNames.push(regionName);
+        });
+        scores.sort((a, b) => b - a); // Sort by descending order
+        regionScores.sort((a, b) => scores.indexOf(a.score) - scores.indexOf(b.score)); // Sort by order of score in scores array
+        
+        regionsString = `${regionNames.slice(0, regionNames.length - 1).join(", ")} and ${regionNames[regionNames.length - 1]}`; // Join elements with ", ", then for the last element join with "and"
+        trophy = trophies[censusID];
+        censusName = censusNames[censusID];
+        const discordEmbed = new Discord.RichEmbed()
+            .setColor('#ce0001')
+            .setAuthor(`Comparison of ${regionsString} in ${censusName}`, trophy)
+            .setTitle(`${regionScores[0].region} wins!`)
+            .setTimestamp()
+        
+        regionScores.forEach((element, index) => discordEmbed.addField(`${index + 1}. ${element.region}`, `Score: ${element.score}`));
+
+        receivedMessage.channel.send(discordEmbed)
+
      // Verify nation
     } else if (primaryCommand === "verifyme") {
         if (arguments.length > 2) {
@@ -616,8 +701,43 @@ client.on('message', receivedMessage => {
         return
     }
 
-    if (receivedMessage.content === "F" || receivedMessage.content === "f") {
-        receivedMessage.channel.send("Respects paid.");
+    if (receivedMessage.content.toLowerCase() === "f") {
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db('heroku_n7xj73rp');
+            const collections = dbo.collection("collection");
+
+            collections.find({'id': 'counter'}).toArray((err, items) => {
+                const item = items[0];
+                receivedMessage.channel.send(`Respects paid. (${item.respects + 1} respects paid)`);
+                collections.updateOne({'id': "counter"}, {'$inc': {'respects': 1}});
+            });
+        });
+    }
+
+    if (receivedMessage.content.toLowerCase() === "good bot") {
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db('heroku_n7xj73rp');
+            const collections = dbo.collection("collection");
+
+            collections.find({'id': 'counter'}).toArray((err, items) => {
+                const item = items[0];
+                receivedMessage.channel.send(`You have voted Unity Machine as being good. (${item.goodbot + 1} votes in total for being good, ${item.badbot} votes in total for being bad)`);
+                collections.updateOne({'id': "counter"}, {'$inc': {'goodbot': 1}});
+            });
+        });
+    }
+
+    if (receivedMessage.content.toLowerCase() === "bad bot") {
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db('heroku_n7xj73rp');
+            const collections = dbo.collection("collection");
+
+            collections.find({'id': 'counter'}).toArray((err, items) => {
+                const item = items[0];
+                receivedMessage.channel.send(`You have voted Unity Machine as being bad. (${item.goodbot} votes in total for being good, ${item.badbot + 1} votes in total for being bad)`);
+                collections.updateOne({'id': "counter"}, {'$inc': {'badbot': 1}});
+            });
+        });
     }
 
     if (receivedMessage.content.startsWith("!")) {

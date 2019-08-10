@@ -8,6 +8,7 @@ __Nation info__
 
 __Region info__
 `!rcensus`: Get performance of a region in a census
+`!rcompare`: Compare 2-5 regions in a census
 `!rinfo`: Get information about a region
 
 __Other NationStates commands__
@@ -18,6 +19,7 @@ __Other NationStates commands__
 __Other commands__
 `!8ball`: Get yes-no response to question
 `!help`: Get information about all commands or a specific command
+`!pronoun`: Assign pronoun roles to yourself
 `!quote`: Get random quote from leftist leader
 `!rip`: Pay respects
 `!roll`: Simulates dice roll
