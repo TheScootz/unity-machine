@@ -152,6 +152,14 @@ function processCommand(receivedMessage) {
     // Get random quote
     } else if (primaryCommand === "quote") {
         let quotes = openFile("quotes.txt");
+        if (arguments.length >= 1) {
+            arguments = arguments.join(" ")
+            quotes = quotes.filter(quote => quote.endsWith(arguments));
+            if (quotes.length === 0) { // No quotes
+                receivedMessage.channel.send(`Sorry, but there are no quotes from ${arguments}. If you want quotes from them, please contact The Comrade#4859.`);
+                return
+            }
+        }
         let randomQuote = getRandomObject(quotes);
         receivedMessage.channel.send(randomQuote);
 
@@ -559,6 +567,14 @@ function processCommand(receivedMessage) {
             }
         });
         arguments.forEach(rolename => guildMember.addRole(pronounRoles.find(role => role.name === rolename)));
+        const argumentsString = arguments.join(" and ");
+        if (arguments.length === 0) {
+            receivedMessage.channel.send("Removed all pronoun roles!");
+        } else if (arguments.length === 1) {
+            receivedMessage.channel.send(`Added ${argumentsString} role!`);
+        } else {
+            receivedMessage.channel.send(`Added ${argumentsString} roles!`);
+        }
 
         // Compare multiple regions
     } else if (primaryCommand === "rcompare") {
