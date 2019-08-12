@@ -722,7 +722,7 @@ client.on('message', receivedMessage => {
         return
     }
 
-    if (receivedMessage.content.toLowerCase() === "f") {
+    if (receivedMessage.content.toLowerCase() === "f" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db('heroku_n7xj73rp');
             const collections = dbo.collection("collection");
@@ -735,7 +735,7 @@ client.on('message', receivedMessage => {
         });
     }
 
-    if (receivedMessage.content.toLowerCase() === "good bot") {
+    if (receivedMessage.content.toLowerCase() === "good bot" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db('heroku_n7xj73rp');
             const collections = dbo.collection("collection");
@@ -748,7 +748,7 @@ client.on('message', receivedMessage => {
         });
     }
 
-    if (receivedMessage.content.toLowerCase() === "bad bot") {
+    if (receivedMessage.content.toLowerCase() === "bad bot" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db('heroku_n7xj73rp');
             const collections = dbo.collection("collection");
