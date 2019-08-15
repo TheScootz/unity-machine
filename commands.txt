@@ -90,11 +90,12 @@
 
 `!quote [Person]`
 
-**Usage:** Only enter the last name of the leftist leader you want the quote from (exceptions are MLK and Malcolm X)
+**Usage:** Only enter the last name of the leftist leader you want the quote from (exceptions are MLK and Malcolm X). The name is case-insensitive.
 **Details:** The command returns a random quote from leftist leaders. There are 94 possible quotes that can be returned. If a leftist leader is specified, then only quotes from that person will be returned.
 **Examples:**
 `!quote`
 `!quote Stalin`
+`!quote marx`
 
 
 `!rcensus [Census ID] [Region]`

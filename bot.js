@@ -154,7 +154,7 @@ function processCommand(receivedMessage) {
         let quotes = openFile("quotes.txt");
         if (arguments.length >= 1) {
             arguments = arguments.join(" ")
-            quotes = quotes.filter(quote => quote.endsWith(arguments));
+            quotes = quotes.filter(quote => quote.toLowerCase().endsWith(arguments.toLowerCase())); // toLowerCase() allows for case-insensitive matching
             if (quotes.length === 0) { // No quotes
                 receivedMessage.channel.send(`Sorry, but there are no quotes from ${arguments}. If you want quotes from them, please contact The Comrade#4859.`);
                 return
@@ -350,7 +350,7 @@ function processCommand(receivedMessage) {
             .setThumbnail(responseObject.flag)
             .addField(responseObject.category, '\u200b', true)
             .addField(`Largest Industry: ${responseObject.majorIndustry}`, '\u200b', true)
-            .addField(`Influence: ${responseObject.influence}`, `${responseObject.endorsements} endorsements (${ + (responseObject.endorsements / responseObject.numWA * 100).toFixed(2)}% of ${responseObject.numWA} WA Nations)`)
+            .addField(`Influence: ${responseObject.influence}`, `${responseObject.endorsements} endorsements (${(responseObject.endorsements / responseObject.numWA * 100).toFixed(2)}% of ${responseObject.numWA} WA Nations)`)
             .addField(`Average income: ${responseObject.income} ${responseObject.currency}s`, `Average income of Poor: ${responseObject.poorIncome} ${responseObject.currency}s`)
             .setFooter(responseObject.founded)
             .setTimestamp()
@@ -490,6 +490,9 @@ function processCommand(receivedMessage) {
         } else {
             const founderLink = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${regionResponse[5]}&q=name`;
             responseObject.founder = `Founded by ${request(founderLink)}`;
+            if (responseObject.founder === "Founded by 404") { // Founder does not exist anymore
+                responseObject.founder = `Founded by ${regionResponse[5]}`;
+            }
         }
 
         responseObject.foundedTime = regionResponse[6] === "0" ? "Founded in Antiquity" : `Founded ${regionResponse[6]}` // Checks if region was founded in Antiquity
