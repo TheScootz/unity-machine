@@ -7,7 +7,7 @@ const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 const mongoUrl = process.env.MONGODB_URI;
-const mongoUser = mongoUser;
+const mongoUser = 'heroku_n7xj73rp';
 
 const client = new Discord.Client()
 
