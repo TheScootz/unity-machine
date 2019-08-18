@@ -7,6 +7,7 @@ const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 const mongoUrl = process.env.MONGODB_URI;
+const mongoUser = mongoUser;
 
 const client = new Discord.Client()
 
@@ -108,7 +109,7 @@ function processCommand(receivedMessage) {
                 let diceString = [];
                 let sumDice = 0;
                 for (let i = 0; i < diceRolled; i ++) {
-                    let randomDie = Math.ceil(Math.random() * faces);
+                    let randomDie = Math.floor(Math.random() * faces) + 1;
                     sumDice += randomDie;
                     diceString.push(randomDie);
                 }
@@ -642,6 +643,108 @@ function processCommand(receivedMessage) {
 
         receivedMessage.channel.send(discordEmbed)
 
+      // Get one of the hottest posts on a subreddit
+    } else if (primaryCommand === "hot") {
+        if (arguments.length < 3) { // 2 or less arguments
+            if (arguments.length < 2) { // 1 or less arguments
+                if (arguments.length === 0) { // No arguments
+                    receivedMessage.channel.send(`Error: This command requires at least one command. ${helpPrimaryCommand}`);
+                    return
+                }
+                arguments[1] = "5";
+            }
+            arguments[2] = "False";
+        } else if (arguments.length > 3) {
+            receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
+            return
+        }
+
+        if (! (Number.isInteger(Number(arguments[1])) && Number(arguments[1]) > 0 && Number(arguments[1]) <= 20)) { // "Number of posts" argument not an integer or less than 1
+            receivedMessage.channel.send(`Error: "Number of Posts" argument is not an integer. ${helpPrimaryCommand}`);
+            return
+        }
+        if (! (arguments[2] === "False" || arguments[2] === "True")) { // 
+            receivedMessage.channel.send(`Error: The "Sticky posts included" argument must be either "True" or "False". ${helpPrimaryCommand}`);
+            return
+        }
+
+        const pythonProcess = childProcess.spawn('python3',["reddit.py", arguments[0], arguments[1], arguments[2]]);
+        pythonProcess.stdout.on('data', (data) => { // Received data from reddit.py
+            data = data.toString();
+            if (data.startsWith("Error Message:")) { // Is error message
+                if (data === "Error Message: received 404 HTTP response\n") { // Not found
+                    receivedMessage.channel.send("Error: subreddit does not exist.");
+                } else if (data === "Error Message: No NSFW subreddits allowed.\n" || data === "Error Message: Subreddit is private.\n") {
+                    receivedMessage.channel.send(data);
+                } else {
+                    receivedMessage.channel.send(`An unexpected error occured. ${data}`);
+                }
+                return
+            }
+
+            submissionInfo = JSON.parse(data);
+            aboutJSON = JSON.parse(request(`https://www.reddit.com/r/${arguments[0]}/about.json`)); // about.json of subreddit
+            discordEmbed = new Discord.RichEmbed()
+                .setColor('#ce0001')
+                .setFooter(`Upvotes: ${submissionInfo.score}`)
+            
+            if (aboutJSON === 403) { // Forbidden (Quarantined) subreddit
+                discordEmbed.setAuthor(submissionInfo.title, "", submissionInfo.url)
+            } else {
+                discordEmbed.setAuthor(submissionInfo.title, aboutJSON.data.icon_img, submissionInfo.url)
+            }
+
+            if (submissionInfo.type === "Image") {
+                discordEmbed.setImage(submissionInfo.content);
+            } else if (submissionInfo.type === "Link") {
+                discordEmbed.setDescription(`[Link](${submissionInfo.content})`)
+            } else if (submissionInfo.type === "Post") {
+                discordEmbed.setDescription(submissionInfo.content)
+            }
+            receivedMessage.channel.send(discordEmbed);
+                
+        });
+
+     // Get next anniversary of nation
+    } else if  (primaryCommand === "nanniversary") {
+        if (arguments.length === 0) {
+            receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
+            return
+        }
+        if (arguments.length > 1) {
+            receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
+            return
+        }
+
+        const today = moment().utc().startOf('day');
+        let anniversary = request(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${arguments[0]}&q=name+foundedtime`);
+        if (typeof(anniversary) === "number") {
+            if (anniversary === 404) {
+                receivedMessage.channel.send(`Error: "${arguments[0]}" was not found.`);
+            } else {
+                receivedMessage.channel.send(`An unexpected error occured. Error code: ${anniversary}`);
+            }
+            return
+        }
+
+        if (anniversary[1] === "0") { // Founded in Antiquity
+            receivedMessage.channel.send("Sorry, the requested nation was founded in Antiquity.");
+            return
+        }
+        const nation = anniversary[0];
+        anniversary = moment.unix(anniversary[1]).utc().startOf('day');
+        let years = today.diff(anniversary, 'years');
+        anniversary.add(years, 'y');
+
+        if (anniversary.isSame(today)) { // Anniversary is today
+            years = ordinal(years); // Conver to ordinal number
+            receivedMessage.channel.send(`${nation}'s ${years} anniversary is today! \u{1f389}`);
+        } else {
+            anniversary.add(1, 'y'); // Add another year (next anniversary must be in the future)
+            years = ordinal(years + 1)
+            receivedMessage.channel.send(`${nation}'s ${years} anniversary is in ${anniversary.diff(today, 'days')} days!`);
+        }
+
      // Verify nation
     } else if (primaryCommand === "verifyme") {
         if (arguments.length > 2) {
@@ -689,14 +792,62 @@ function processCommand(receivedMessage) {
             guildMember.removeRole(guildMember.roles.find(role => role.name === "CTE"));
         }
 
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db(mongoUser);
+            const collections = dbo.collection("userNations");
+            collections.updateOne({"id": guildMember.id}, {"$set": {"nation": responseObject.nation, "time": "None"}});
+        });
+
         guildMember.removeRole(guildMember.roles.find(role => role.name === "Unverified"));
-        TLAServer.createRole({name: `${responseObject.nation} \u2713`, color: 5533306}) // #546e7a
-            .then(role => guildMember.addRole(role)); // Create role then add role
         guildMember.setNickname(`${responseObject.nation} \u2713`);
         receivedMessage.channel.send(`Verification as ${responseObject.nation} successful! You should now be able to access The Leftist Assembly server.`);
 
         const foyer = client.channels.find(channel => channel.name === "foyer");
         foyer.send(`@here Welcome ${receivedMessage.author.toString()} to The Leftist Assembly Discord Server!`);
+
+     // Get registered nation of user
+    } else if (primaryCommand === "usernation") {
+        tag = arguments.join(" ");
+        const user = client.users.find(u => u.tag === tag);
+        if (! user) {
+            receivedMessage.channel.send(`Error: ${tag} is not part of The Leftitst Assembly Server.`);
+            return
+        }
+        if (! TLAServer.member(user).roles.find(role => role.name === "Verified")) { // Not yet verified
+            receivedMessage.channel.send(`Error: ${tag} is not verified yet.`)
+        }
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db('unity-machine');
+            const collections = dbo.collection("userNations");
+            collections.find({"id": user.id}).toArray((err, items) => {
+                receivedMessage.channel.send(`${tag} is verified as ${items[0].nation}.`)
+            });
+        });
+     
+     // Get number of members
+    } else if (primaryCommand === "membercount") {
+        rolesCount = { 
+            Verified: 0,
+            Unverified: 0,
+            CTE: 0,
+            Assemblian: 0,
+            Visitor: 0
+        };
+        const pronounRoles = TLAServer.roles.filter(role => role.hexColor === "#dddddd");
+        pronounRoles.forEach(role => rolesCount[role.name] = 0);
+        TLAServer.members.forEach(member => {
+            for (var role in rolesCount) {
+                if (member.roles.find(r => r.name === role)) { // User has role
+                    rolesCount[role] ++
+                }
+            }
+        });
+        message = [] // Message to send
+        message.push(`Total members in server: ${TLAServer.members.keyArray().length}`) // Convert TLAServer.members to array of keys, the find length and append to message
+        for (var role in rolesCount) {
+            message.push(`Number of users with ${role} role: ${rolesCount[role]}`);
+        }
+        receivedMessage.channel.send(message.join("\n"))
 
      // Get information about commands
     } else if (primaryCommand === "help") {
@@ -727,7 +878,7 @@ client.on('message', receivedMessage => {
 
     if (receivedMessage.content.toLowerCase() === "f" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
-            const dbo = db.db('heroku_n7xj73rp');
+            const dbo = db.db(mongoUser);
             const collections = dbo.collection("collection");
 
             collections.find({'id': 'counter'}).toArray((err, items) => {
@@ -740,7 +891,7 @@ client.on('message', receivedMessage => {
 
     if (receivedMessage.content.toLowerCase() === "good bot" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
-            const dbo = db.db('heroku_n7xj73rp');
+            const dbo = db.db(mongoUser);
             const collections = dbo.collection("collection");
 
             collections.find({'id': 'counter'}).toArray((err, items) => {
@@ -753,7 +904,7 @@ client.on('message', receivedMessage => {
 
     if (receivedMessage.content.toLowerCase() === "bad bot" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
-            const dbo = db.db('heroku_n7xj73rp');
+            const dbo = db.db(mongoUser);
             const collections = dbo.collection("collection");
 
             collections.find({'id': 'counter'}).toArray((err, items) => {
@@ -775,43 +926,75 @@ client.on('ready', () => {
     TLAServer = client.guilds.array()[0];
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
 
-    function CTE() { // Cycle through all users and make sure their nation has not CTE'd
+    // Remove all nation roles
+    function removeNationRoles() {
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db(mongoUser);
+            const collections = dbo.collection("userNations");
+            TLAServer.members.forEach(member => {
+                if (member.roles.find(role => role.name === "Verified")) {
+                    const nationRole = member.roles.find(role => role.hexColor === "#546e7a");
+                    const nation = nationRole.name.slice(0, -2);
+                    collections.insertOne({"id": member.id, "nation": nation, "time": "None"})
+                    nationRole.delete();
+                } else if (member.roles.find(role => role.name === "Unverified") || member.roles.find(role => role.name === "CTE")) { // Has CTE or Unverified role
+                    collections.insertOne({"id": member.id, "nation": "None", "time": new Date().getTime()})
+                }
+
+            });
+        });
+    }
+    removeNationRoles();
+
+    function reRoleKick() {
         const nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations")[0].split(",");
         if (typeof(nations) === 'number') {
-            client.users.get("420734859418533889").send(`Unable to get all nations in the world. Error code: ${nations}`);
+            console.log(`Unable to get all nations in the world. Error code: ${nations}`);
             return
         }
 
-        TLAServer.members.forEach(member => {
-            if (member.roles.find(role => role.name === "Verified")) { // User is verified but not marked as CTE yet
-                const nationRole = member.roles.find(role => role.hexColor === "#546e7a");
-                const nation = nationRole.name.slice(0, -2);
-                const rawNation = nation.toLowerCase().replace(/ /g, "_");
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db(mongoUser);
+            const collections = dbo.collection("userNations");
 
-                if (! nations.some(nation => nation === rawNation)) {
-                    const CTEMessage = eval(fs.readFileSync("cte_message.txt").toString()); // Add interpolation for text in cte_message.txt
-                    member.send(CTEMessage);
-
-                    if (member.roles.find(role => role.name === "Assemblian")) { // User is marked as Assemblian
-                        member.removeRole(member.roles.find(role => role.name === "Assemblian"));
-                    } else {
-                        member.removeRole(member.roles.find(role => role.name === "Visitor"));
+            TLAServer.members.forEach(member => {
+                collections.find({id: member.id}).toArray((err, items) => {
+                    const item = items[0];
+                    if (! item) {
+                        return
                     }
-                    member.removeRole(nationRole);
-                    nationRole.delete();
-                    
-                    member.removeRole(TLAServer.roles.find(role => role.name === 'Verified'));
-                    member.addRole(TLAServer.roles.find(role => role.name === "CTE"));
-                }
-            }
+
+                    const rawNation = item.nation.toLowerCase().replace(/ /g, "_");
+                    if ((! nations.some(nation => nation === rawNation)) && member.roles.find(role => role.name === "Verified")) { // User is verified but not marked as CTE yet
+                        const CTEMessage = eval(fs.readFileSync("cte_message.txt").toString()); // Add interpolation for text in cte_message.txt
+                        member.send(CTEMessage);
+    
+                        if (member.roles.find(role => role.name === "Assemblian")) { // User is marked as Assemblian
+                            member.removeRole(member.roles.find(role => role.name === "Assemblian"));
+                        } else {
+                            member.removeRole(member.roles.find(role => role.name === "Visitor"));
+                        }
+
+                        member.removeRole(TLAServer.roles.find(role => role.name === 'Verified'));
+                        member.addRole(TLAServer.roles.find(role => role.name === "CTE"));
+
+                        collections.updateOne({"id": member.id}, {'$set': {"nation": "None", "time": new Date().getTime()}});
+
+                    } else if (item.time !== "None") {
+                        if (moment().diff(item.time, 'hours') >= 168) {
+                            member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
+                        }
+                    }
+                });
+            });
         });
     }
 
-    CTE();
+    reRoleKick();
     console.log("Ready to take commands!");
     setInterval(() => {
         console.log("Giving CTE role...")
-        CTE()
+        reRoleKick()
         console.log("Ready to take commands!")
     }, 43200000);
 });

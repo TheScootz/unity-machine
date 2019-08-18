@@ -1,6 +1,7 @@
 Use `!help [command]` to find more specific info on a given command.
 
 __Nation info__
+`!nanniversary`: Get the number of days until a nation's next anniversary
 `!ncensus`: Get performance of a nation in a census
 `!ncompare`: Compare 2-5 nations in a census
 `!ninfo`: Get information about a nation
@@ -19,9 +20,12 @@ __Other NationStates commands__
 __Other commands__
 `!8ball`: Get yes-no response to question
 `!help`: Get information about all commands or a specific command
+`!hot`: Get one of the hottest posts in a subreddit
+`!membercount`: Get the number of members in the server
 `!pronoun`: Assign pronoun roles to yourself
 `!quote`: Get random quote from leftist leader
 `!rip`: Pay respects
 `!roll`: Simulates dice roll
+`!usernation`: Get the nation a user is registered with
 
 Created by Nottinhaps. Contact The Comrade#4859 or telegram Nottinhaps if you have any questions.

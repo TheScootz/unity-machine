@@ -4,4 +4,6 @@
 2. Click 'Copy to clipboard'
 3. Type the following into this DM channel: \`!verifyme [nation] [token]\`. For example, '!verifyme unity_machine hdiicu_57chjnd_e_qg21bv2b_k'.
 
+Warning: You have one week to re-verify yourself, or you will be kicked from the server!
+
 Contact The Comrade#4859 or telegram Nottinhaps if you have any questions.`

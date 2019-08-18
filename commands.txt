@@ -8,6 +8,7 @@
 
 
 `!censusnum [Census Name]`
+
 **Usage:** The census name entered must be exactly the same as the one found in the Nation Rank page.
 **Details:** The command returns the Census ID number of a given Census.
 **Examples:**
@@ -27,9 +28,35 @@
 `!help roll`
 
 
+`!hot [Subreddit] [Number of posts] [Stickied posts included]`
+
+**Usage:** The subreddit entered must have the "\r" portion removed. All NSFW subreddits are **banned**. The number of posts argument entered must be an integer over 0 and equal to or below 20, and defaults to 5. The stickied posts argument must be "True" or "False", and defaults to False.
+**Details:** The command takes a random post from the hottest (usually hottest 5) posts of a given subreddit. Then, the post title, a link to the post, and the number of upvotes will be returned. If applicable, the posts link, image, and text content will also be returned.
+**Examples:**
+`!hot aww`
+`!hot socialism 10`
+`!hot LateStageCapitalism 5 True`
+
+
+`!membercount `
+
+**Usage:** The command takes no arguments.
+**Details:** This command returns the total number of people in the server, as well as the total number of people with the Verified, Unverified, CTE, Assemblian, Visitor and each of the pronoun roles.
+**Examples:**
+`!membercount`
+
+
+`!nanniversary`
+**Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered are case-insensitive.
+**Details:** The command returns the number of days until a given nation's next anniversary.
+**Examples:**
+`!nanniversary delusija`
+`!nanniversary USSRs`
+
+
 `!ncensus [Census ID] [Nation]`
 
-**Usage:** The specified Census ID must be an integer between 0 and 85. The specified nation name must have the spaces replaced with under scrolls. The nation name entered is case-insensitive. The Census IDs for each census can be found by using `!censusnum`.
+**Usage:** The specified Census ID must be an integer between 0 and 85. The specified nation name must have the spaces replaced with under scrolls. The nation name entered are case-insensitive. The Census IDs for each census can be found by using `!censusnum`.
 **Details:** The command returns the score of the specified nation in the specified World Census. It will also display the rank and percentile of the nation in the region it resides in and the world as a whole.
 **Examples:**
 `!ncensus 12 leftist_assembly_founder`
@@ -91,7 +118,7 @@
 `!quote [Person]`
 
 **Usage:** Only enter the last name of the leftist leader you want the quote from (exceptions are MLK and Malcolm X). The name is case-insensitive.
-**Details:** The command returns a random quote from leftist leaders. There are 94 possible quotes that can be returned. If a leftist leader is specified, then only quotes from that person will be returned.
+**Details:** The command returns a random quote from leftist leaders. There are 99 possible quotes that can be returned. If a leftist leader is specified, then only quotes from that person will be returned.
 **Examples:**
 `!quote`
 `!quote Stalin`
@@ -146,6 +173,14 @@
 `!roll d20`
 `!roll 2d8`
 `!roll d6-d6`
+
+
+`!usernation [Username and Tag]`
+**Usage:** You can find the username and tag of a Discord User by clicking on their name on the right of the Discord Client in The Leftist Assembly server.
+**Details:** The command returns the nation a given user is registered as.
+**Examples:**
+`!usernation The Comrade#4859`
+`!usernation Kyara#3761`
 
 
 `!verifyme [Nation] [Token]`
