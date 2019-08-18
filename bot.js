@@ -926,26 +926,6 @@ client.on('ready', () => {
     TLAServer = client.guilds.array()[0];
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
 
-    // Remove all nation roles
-    function removeNationRoles() {
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
-            const dbo = db.db(mongoUser);
-            const collections = dbo.collection("userNations");
-            TLAServer.members.forEach(member => {
-                if (member.roles.find(role => role.name === "Verified")) {
-                    const nationRole = member.roles.find(role => role.hexColor === "#546e7a");
-                    const nation = nationRole.name.slice(0, -2);
-                    collections.insertOne({"id": member.id, "nation": nation, "time": "None"})
-                    nationRole.delete();
-                } else if (member.roles.find(role => role.name === "Unverified") || member.roles.find(role => role.name === "CTE")) { // Has CTE or Unverified role
-                    collections.insertOne({"id": member.id, "nation": "None", "time": new Date().getTime()})
-                }
-
-            });
-        });
-    }
-    removeNationRoles();
-
     function reRoleKick() {
         const nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations")[0].split(",");
         if (typeof(nations) === 'number') {
