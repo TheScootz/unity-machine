@@ -986,6 +986,12 @@ client.on("guildMemberAdd", newMember => {
     newMember.addRole(unverifiedRole); // Add unverified role
     const welcomeMessage = eval(fs.readFileSync("welcomeMessage.txt").toString()); // Add interpolation for text in welcomeMessage.txt
     newMember.user.send(welcomeMessage);
+
+    MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        const dbo = db.db(mongoUser);
+        const collections = dbo.collection("userNations");
+        collections.insertOne({"id": newMember.id, "nation": "None", "time": new Date().getTime()});
+    });
 });
 
 client.on("guildMemberRemove", member => {
