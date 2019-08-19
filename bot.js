@@ -1,6 +1,8 @@
+const childProcess = require("child_process");
 const Discord = require('discord.js');
 const fs = require('fs');
 const he = require('he');
+const ordinal = require('ordinal');
 const moment = require('moment');
 const MongoClient = require('mongodb').MongoClient;
 const striptags = require('striptags');
@@ -817,7 +819,7 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send(`Error: ${tag} is not verified yet.`)
         }
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
-            const dbo = db.db('unity-machine');
+            const dbo = db.db(mongoUser);
             const collections = dbo.collection("userNations");
             collections.find({"id": user.id}).toArray((err, items) => {
                 receivedMessage.channel.send(`${tag} is verified as ${items[0].nation}.`)
