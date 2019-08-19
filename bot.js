@@ -995,10 +995,12 @@ client.on("guildMemberAdd", newMember => {
 });
 
 client.on("guildMemberRemove", member => {
-    if (member.roles.find(role => role.name === "Verified")) {
-        const nationRole = member.roles.find(role => role.hexColor === "#546e7a");
-        nationRole.delete();
-    }
+    MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        const dbo = db.db(mongoUser);
+        const collections = dbo.collection("userNations");
+        collections.deleteOne({"id": member.id});
+    });
+
 })
 
 const bot_secret_token = "NjA4Mjc3ODU4NzQ1NDUwNDk3.XUmGjA.4OA6wyiw-pl_iQeew9OpFtjVocw";
