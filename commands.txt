@@ -46,7 +46,7 @@
 `!membercount`
 
 
-`!nanniversary`
+`!nanniversary [Nation]`
 **Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered are case-insensitive.
 **Details:** The command returns the number of days until a given nation's next anniversary.
 **Examples:**
@@ -64,6 +64,15 @@
 `!ncensus 66 fedele`
 
 
+`!nci [Nation]`
+**Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered are case-insensitive.
+**Details:** The command returns the Comrade Index of the specified nation, plus a breakdown of the score.
+**Examples:**
+`!nci socialist_columbia`
+`!nci sonna`
+`!nci caracasus`
+
+
 `!ncompare [Census ID] [Nation] [Nation 2] [Nation 3] [Nation 4] [Nation 5]`
 
 **Usage:** The specified Census ID must be an integer between 0 and 85. The specified nation names must have the spaces replaced with under scrolls. The nation names entered are case-insensitive. Between 2 to 5 nations can be entered at once. The Census IDs for each census can be found by using `!censusnum`.
@@ -71,6 +80,14 @@
 **Examples:**
 `!ncompare 71 the_final_horseman argentigrad`
 `!ncompare 80 cedoria llorens libertasnia auven new_lonopolian_empire`
+
+
+`!ncompareci [Nation] [Nation 2] [Nation 3] [Nation 4] [Nation 5]`
+**Usage:** The specified nation names must have the spaces replaced with under scrolls. The nation names entered are case-insensitive. Between 2 to 5 nations can be entered at once.
+**Details:** The command returns the nation that performs the best in the Comrade Index out of all those compared. It also ranks the nations with each other and displays their scores in the Comrade Index.
+**Examples:**
+`!ncompareci new_prague_workers_republic tannkrem`
+`!ncompareci Katosima VegemiteIsGross`
 
 
 `!nextholiday `
@@ -101,10 +118,17 @@
 `!npolicy ransium`
 
 
+`!ooc`
+**Usage:** The command requires no arguments.
+**Details:** The command gets all sent images in the last 100 messages sent in #out-of-context. Then, it filters all images and returns a random one.
+**Examples:**
+`!ooc`
+
+
 `!pronoun [Pronouns]`
 
 **Usage:** The available pronouns can be found by looking at all tags that Unity Machine has been assigned. Pronouns are seperated by a space.
-**Details:** The command removes all pronoun roles you already have, and assgns you the specified pronoun(s).
+**Details:** The command removes all pronoun roles you already have, and assigns you the specified pronoun(s).
 
 **Examples:**
 `!pronoun he/him`
@@ -135,13 +159,29 @@
 `!recensus 66 forest`
 
 
-`!rcompare [Census ID] [Nation] [Nation 2] [Nation 3] [Nation 4] [Nation 5]`
+`!rcompare [Census ID] [Region] [Region 2] [Region 3] [Region 4] [Region 5]`
 
 **Usage:** The specified Census ID must be an integer between 0 and 85. The specified region names must have the spaces replaced with under scrolls. The region names entered are case-insensitive. Between 2 to 5 regions can be entered at once. The Census IDs for each census can be found by using `!censusnum`.
 **Details:** The command returns the region that performs the best in a given census out of all those compared. It also ranks the regions with each other and displays their scores in the given census.
 **Examples:**
 `!rcompare 255 the_leftist_assembly democratic_socialist_assembly the_internationale the_communist_bloc north_korea`
 `!rcompare 66 the_leftist_assembly democratic_socialist_assembly social_liberal_union the_versution_federation the_communist_bloc`
+
+
+`!rcpower [Region] [Region 2] [Region 3] [Region 4] [Region 5]`
+**Usage:** The specified region names must have the spaces replaced with under scrolls. The region names entered are case-insensitive. Between 2 to 5 regions can be entered at once. 
+**Details:** The command compares the specified regions by power, a measure of influence in the World Assembly by adding the number of delegate endoresments and the number of WA Nations. It ranks the regions with each other and displays their scores in power.
+**Examples:**
+`!rcpower the_communist_bloc the_leftist_assembly`
+`!rcpower social_liberal_union democratic_socialist_assembly`
+
+
+`!rcwa Region] [Region 2] [Region 3] [Region 4] [Region 5]`
+**Usage:** The specified region names must have the spaces replaced with under scrolls. The region names entered are case-insensitive. Between 2 to 5 regions can be entered at once. 
+**Details:** This command returns the region that has the most WA nations out of all those specified. It also ranks the regions with each other and displays the number of WA Nations they have.
+**Examples:**
+`!rcwa forest the_leftist_assembly`
+`!rcwa libertarian_socialist_confederation north_korea`
 
 
 `!rinfo [Region]`

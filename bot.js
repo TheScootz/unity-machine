@@ -9,7 +9,7 @@ const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 const mongoUrl = process.env.MONGODB_URI;
-const mongoUser = 'heroku_n7xj73rp';
+const mongoUser = process.env.MONGODB_USER;
 
 const client = new Discord.Client()
 
@@ -62,7 +62,7 @@ function processCommand(receivedMessage) {
     let trophies = openFile("trophies.txt");
     let censusNames = openFile("censusNames.txt");
     let censusDescriptions = openFile("censusDescriptions.txt");
-    trophies[255] = "https://www.nationstates.net/images/trophies/mostnations-100.png"; // Census no. 255 is Number of Nations
+    trophies[255] = "mostnations"; // Census no. 255 is Number of Nations
     censusNames[255] = "Number of Nations";
     censusDescriptions[255] = "The World Census tracked the movements of military-grade geo-airlifting helicopters to determine which regions have the most nations.";
     const NSThumbnail = "https://theredand.black/uploads/monthly_2017_03/nationstates.png.e8aa5b8de1bd5430dc950d0b297952ab.png";
@@ -207,9 +207,19 @@ function processCommand(receivedMessage) {
             regionRank: response[6],
             regionRankPercentage: response[7],
             censusName: censusNames[censusID],
-            trophy: trophies[censusID],
             censusDesc: censusDescriptions[censusID]
         };
+
+        if (Number(responseObject.worldRankPercentage) <= 1) { // 1st percentile
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-1.png`
+        } else if (Number(responseObject.worldRankPercentage) <= 5) { // 5th percentile
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-5.png`
+        } else if (Number(responseObject.worldRankPercentage) <= 10) { // 10th percentile
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-10.png`
+        } else {
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-100.png`
+        }
+
         const discordEmbed = new Discord.RichEmbed()
             .setColor('#ce0001') // Colour
             .setAuthor(`${responseObject.nation}'s performance in ${responseObject.censusName}`, responseObject.trophy, `https://www.nationstates.net/nation=${nation}/detail=trend/censusid=${censusID}`) // Top line
@@ -239,37 +249,29 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send(`Error: Invalid Census ID "${censusID}". ${helpPrimaryCommand}`);
             return
         }
-
-        const nationLinks = {};
-
-        nations.forEach(nation => nationLinks[nation] = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=${censusID};mode=score`)
-        
-        const keys = Object.keys(nationLinks);
-        let scores = []; // Array of all scores
         let nationScores = []; // Array containing objects of nation and score
-        nationNames = []; // Array of all nation "proper" names
-        keys.forEach(key => { // Iterate over all requested nations
-            response = request(nationLinks[key]);
-            if (typeof(response) === 'number') { // Error
-                if (response === 404) {
-                receivedMessage.channel.send(`Error: "${key}" was not found.`);
-                } else {
-                    receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`);
-                }
+        let nationNames = []; // Array of all nation "proper" names
+        let error = false;
+        nations.forEach(nation => {
+            const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=${censusID};mode=score`;
+            const response = request(link);
+            if (typeof(response) === 'number') {
+                receivedMessage.channel.send(response === 404 ? `Error: The specified nation ${link} was not found` : `An unexpected error occured. Error code: ${response}`); 
+                error = true;
                 return
             }
             nationName = response[0];
             score =  Number(response[1]);
             nationScores.push({nation: nationName, score: score});
-            scores.push(score);
             nationNames.push(nationName);
         });
-        scores.sort((a, b) => b - a); // Sort by descending order
-        nationScores.sort((a, b) => scores.indexOf(a.score) - scores.indexOf(b.score)); // Sort by order of score in scores array
+        if (error) return;
+
+        nationScores.sort((a, b) => b.score - a.score); // Sort by order of score in scores array
         
-        nationsRawString = keys.join("+")
+        nationsRawString = nations.join("+")
         nationsString = `${nationNames.slice(0, nationNames.length - 1).join(", ")} and ${nationNames[nationNames.length - 1]}`; // Join elements with ", ", then for the last element join with ", and"
-        trophy = trophies[censusID];
+        trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-100.png`;
         censusName = censusNames[censusID];
         const discordEmbed = new Discord.RichEmbed()
             .setColor('#ce0001')
@@ -433,9 +435,18 @@ function processCommand(receivedMessage) {
             worldRank: response[3],
             worldRankPercentage: response[4],
             censusName: censusNames[censusID],
-            trophy: trophies[censusID],
             censusDesc: censusDescriptions[censusID]
         };
+
+        if (Number(responseObject.worldRankPercentage) <= 1) { // 1st percentile
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-1.png`
+        } else if (Number(responseObject.worldRankPercentage) <= 5) { // 5th percentile
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-5.png`
+        } else if (Number(responseObject.worldRankPercentage) <= 10) { // 10th percentile
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-10.png`
+        } else {
+            responseObject.trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-100.png`
+        }
 
         const discordEmbed = new Discord.RichEmbed()
             .setColor('#ce0001')
@@ -544,7 +555,7 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send(`${nextHoliday.name} is only ${difference} days away!`)
         }
 
-        // Find census number
+    // Find census number
     } else if (primaryCommand === "censusnum") {
         arguments = arguments.join(" ");
         const index = censusNames.indexOf(arguments);
@@ -556,7 +567,7 @@ function processCommand(receivedMessage) {
 
      // Change pronoun
     } else if (primaryCommand === "pronoun") {
-        pronounRoles = TLAServer.roles.filter(role => role.hexColor === "#dddddd");
+        const pronounRoles = TLAServer.roles.filter(role => role.hexColor === "#dddddd");
         arguments.forEach(rolename => {
             if (! pronounRoles.find(role => role.name === rolename)) { // Pronoun Role name does not exist
                 receivedMessage.channel.send(`Error: "${rolename}" does not exist.`)
@@ -565,10 +576,10 @@ function processCommand(receivedMessage) {
         if (! arguments.every(rolename => pronounRoles.find(role => role.name === rolename))) {
             return
         }
-    
+
         guildMember = TLAServer.member(receivedMessage.author);
         pronounRoles.forEach(prole => {
-            if (guildMember.roles.find(role => role === prole)  && ! arguments.includes(prole.name)) { // Member has pronoun role and not 
+            if (guildMember.roles.find(role => role === prole) && ! arguments.includes(prole.name)) { // Member has pronoun role and not included in arguments
                 guildMember.removeRole(prole);
             }
         });
@@ -578,6 +589,7 @@ function processCommand(receivedMessage) {
                 guildMember.addRole(pronounRoles.find(role => role.name === rolename));
             }
         });
+
         const argumentsString = arguments.join(" and ");
         if (arguments.length === 0) {
             receivedMessage.channel.send("Removed all pronoun roles!");
@@ -605,35 +617,28 @@ function processCommand(receivedMessage) {
             return
         }
 
-        const regionLinks = {};
-
-        regions.forEach(region => regionLinks[region] = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region};q=name+census;scale=${censusID};mode=score`)
-        
-        const keys = Object.keys(regionLinks);
-        let scores = []; // Array of all scores
-        let regionScores = []; // Array containing objects of region and score
-        regionNames = []; // Array of all region "proper" names
-        keys.forEach(key => { // Iterate over all requested regions
-            response = request(regionLinks[key]);
-            if (typeof(response) === 'number') { // Error
-                if (response === 404) {
-                receivedMessage.channel.send(`Error: "${key}" was not found.`);
-                } else {
-                    receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`);
-                }
+        let regionScores = [];
+        regionNames = [];
+        let error = false;
+        regions.forEach(region => {
+            const link = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region};q=name+census;scale=${censusID};mode=score`;
+            const response = request(link);
+            if (typeof(response) === 'number') {
+                receivedMessage.channel.send(response === 404 ? `The region "${region}" was not found.` : `An unexpected error occured. Error code: ${regionResponse}`);
+                error = true;
                 return
             }
             regionName = response[0];
             score =  Number(response[1]);
             regionScores.push({region: regionName, score: score});
-            scores.push(score);
             regionNames.push(regionName);
         });
-        scores.sort((a, b) => b - a); // Sort by descending order
-        regionScores.sort((a, b) => scores.indexOf(a.score) - scores.indexOf(b.score)); // Sort by order of score in scores array
+        if (error) return;
+
+        regionScores.sort((a, b) => b.score - a.score); // Sort by order of score in scores array
         
         regionsString = `${regionNames.slice(0, regionNames.length - 1).join(", ")} and ${regionNames[regionNames.length - 1]}`; // Join elements with ", ", then for the last element join with "and"
-        trophy = trophies[censusID];
+        trophy = `https://www.nationstates.net/images/trophies/${trophies[censusID]}-100.png`;
         censusName = censusNames[censusID];
         const discordEmbed = new Discord.RichEmbed()
             .setColor('#ce0001')
@@ -645,7 +650,7 @@ function processCommand(receivedMessage) {
 
         receivedMessage.channel.send(discordEmbed)
 
-      // Get one of the hottest posts on a subreddit
+     // Get one of the hottest posts on a subreddit
     } else if (primaryCommand === "hot") {
         if (arguments.length < 3) { // 2 or less arguments
             if (arguments.length < 2) { // 1 or less arguments
@@ -746,6 +751,211 @@ function processCommand(receivedMessage) {
             years = ordinal(years + 1)
             receivedMessage.channel.send(`${nation}'s ${years} anniversary is in ${anniversary.diff(today, 'days')} days!`);
         }
+        
+     // Get random photo from #out-of-context
+    } else if (primaryCommand === "ooc"){
+        const oocChannel = TLAServer.channels.find(channel => channel.name === "out-of-context");
+        oocChannel.fetchMessages({ limit: 100 }).then(messages => {
+            isImageRegex = /\.(jpg|gif|png|tiff)$/ // Check if url is image
+            messages = messages.filter(message => message.attachments.array().length === 1); // Only include messages with one attachment
+            messages = messages.map(message => message.attachments.array()[0].url); // Only include the url of a message's attachment
+            messages = messages.filter(messageAttachmentURL => isImageRegex.test(messageAttachmentURL)); // Only include images
+            receivedMessage.channel.send({files: [getRandomObject(messages)]}); // Send random image from message url array
+        });
+
+     // Compare number of WA nations
+    } else if (primaryCommand === "rcwa") {
+        if (arguments.length < 2) {
+            receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
+            return
+        } else if (arguments.length > 5) {
+            receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
+            return
+        }
+
+        const WALink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members";
+        let WAResponse = request(WALink); // All region nations
+        if (typeof(WAResponse) === 'number') {
+            receivedMessage.channel.send(`An unexpected error occured. Error code: ${WAResponse}`);
+            return
+        }
+        WAResponse = WAResponse[0].split(",");
+
+        let regionInfo = [];
+        let regionNames = [];
+        let error = false;
+        arguments.forEach(region => {
+            let regionResponse = request(`https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=nations+name`);
+            if (typeof(regionResponse) === 'number') {
+                receivedMessage.channel.send(regionResponse === 404 ? `The region "${region}" was not found.` : `An unexpected error occured. Error code: ${regionResponse}`);
+                error = true;
+                return
+            }
+
+            regionResponse[1] = regionResponse[1].split(":");
+            regionResponse[1] = regionResponse[1].filter(nation => WAResponse.includes(nation));
+            regionNames.push(regionResponse[0]);
+            regionInfo.push({region: regionResponse[0], "WA Nations": regionResponse[1].length});
+        });  
+        if (error) return;
+
+        regionInfo.sort((a, b) => b["WA Nations"] - a["WA Nations"]);
+        regionsString = `${regionNames.slice(0, regionNames.length - 1).join(", ")} and ${regionNames[regionNames.length - 1]}`;
+        const discordEmbed = new Discord.RichEmbed()
+            .setColor('#ce0001')
+            .setAuthor(`Comparison of ${regionsString} in number of WA Nations`, "https://www.nationstates.net/images/world_assembly.jpg")
+            .setTitle(`${regionInfo[0].region} wins!`)
+            .setTimestamp()
+
+        for (let i = 0; i < regionInfo.length; i ++) {
+            discordEmbed.addField(`${i + 1}. ${regionInfo[i].region}`, `Number of WA Nations: ${regionInfo[i]["WA Nations"]}`);
+        }
+        receivedMessage.channel.send(discordEmbed);
+
+     // Compare power of regions
+    } else if (primaryCommand === "rcpower") {
+        if (arguments.length < 2) {
+            receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
+            return
+        } else if (arguments.length > 5) {
+            receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
+            return
+        }
+
+        const WALink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members";
+        let WAResponse = request(WALink); // All region nations
+        if (typeof(WAResponse) === 'number') {
+            receivedMessage.channel.send(`An unexpected error occured. Error code: ${WAResponse}`);
+            return
+        }
+        WAResponse = WAResponse[0].split(",");
+
+        let regionInfo = [];
+        let regionNames = [];
+        let error = false;
+        arguments.forEach(region => {
+            let regionResponse = request(`https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=nations+name+delegatevotes`);
+            if (typeof(regionResponse) === 'number') {
+                receivedMessage.channel.send(regionResponse === 404 ? `The region "${region}" was not found.` : `An unexpected error occured. Error code: ${regionResponse}`);
+                error = true;
+                return
+            }
+
+            regionResponse[1] = regionResponse[1].split(":");
+            regionResponse[1] = regionResponse[1].filter(nation => WAResponse.includes(nation));
+            regionNames.push(regionResponse[0]);
+            regionInfo.push({region: regionResponse[0], score: regionResponse[1].length + Number(regionResponse[2]) - 1});
+        }); 
+        if (error) return;
+
+        regionInfo.sort((a, b) => b.score - a.score);
+        regionsString = `${regionNames.slice(0, regionNames.length - 1).join(", ")} and ${regionNames[regionNames.length - 1]}`
+        const discordEmbed = new Discord.RichEmbed()
+            .setColor('#ce0001')
+            .setAuthor(`Comparison of ${regionsString} by Power`, "https://www.nationstates.net/images/world_assembly.jpg")
+            .setTitle(`${regionInfo[0].region} wins!`)
+            .setTimestamp()
+
+        for (let i = 0; i < regionInfo.length; i ++) {
+            discordEmbed.addField(`${i + 1}. ${regionInfo[i].region}`, `Number of WA Nations: ${regionInfo[i].score}`);
+        }
+        receivedMessage.channel.send(discordEmbed);
+
+     // Find the Comrade Index of a particular nation
+    } else if (primaryCommand === "nci") {
+        if (arguments.length === 0) {
+            receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
+            return
+        }
+        let nationScores = request(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${arguments[0]};q=name+census;scale=6+27+28+29+51+57+68+71+73+75;mode=score`);
+        if (typeof(nationScores) === 'number') {
+            receivedMessage.channel.send(nationScores === 404 ? "Error: The specified nation does not exist." : `An unexpected error occured. Error code: ${nationScores}`);
+            return
+        }
+
+        const nationName = nationScores[0];
+        nationScores.shift();
+        nationScores = nationScores.map(score => Number(score));
+        nationScores[4] **= -1
+        nationScores[6] **= 2
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db(mongoUser);
+            const collections = dbo.collection("comradeIndex");
+            collections.find({'id': 'CI'}).toArray((err, items) => {
+                let maxTLA = items[0].maxTLA;
+
+                let CIScores = [];
+                for (let i = 0; i < 10; i ++) {
+                    CIScores.push(nationScores[i] * 10 / maxTLA[i]);
+                }
+                CIScore = CIScores.reduce((accumulator, score) => accumulator + score);
+                listOfCensuses = ["Compassion", "Government Size", "Welfare", "Public Healthcare", "Corruption", "Public Transport", "Human Development Index", "Inclusiveness", "Average Income of Poor", "Public Education"]
+                let discordEmbed = new Discord.RichEmbed()
+                    .setColor('#ce0001')
+                    .setAuthor(`${nationName}'s total score on the Comrade Index: ${CIScore}`)
+                    .setDescription("The Comrade Index, jointly created by Nottinhaps and Llorens, uses 10 factors to create a score ranging up to 100.")
+                    .setTimestamp()
+                for (let i = 0; i < 10; i ++) {
+                    discordEmbed.addField(`Score in ${listOfCensuses[i]}`, CIScores[i])
+                }
+                receivedMessage.channel.send(discordEmbed);
+            });
+        });
+
+     // Compare the Comrade Index of nations
+    } else if (primaryCommand === "ncompareci") {
+        if (arguments.length < 2) {
+            receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
+            return
+        }
+        if (arguments.length > 5) {
+            receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
+            return
+        }
+        let nationInfos = [];
+        let nationNames = [];
+        arguments.forEach(nation => {
+            let nationScores = request(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=6+27+28+29+51+57+68+71+73+75;mode=score`);
+            if (typeof(nationScores) === 'number') {
+                receivedMessage.channel.send(nationScores === 404 ? `Error: "${nation}" does not exist.` : `An unexpected error occured. Error code: ${nationScores}`);
+                return
+            }
+            const nationName = nationScores[0];
+            nationScores.shift();
+            nationScores = nationScores.map(score => Number(score));
+            nationScores[4] **= -1
+            nationScores[6] **= 2
+            nationInfos.push({nation: nationName, score: nationScores});
+            nationNames.push(nationName);
+        });
+        nationsString = `${nationNames.slice(0, nationNames.length - 1).join(", ")} and ${nationNames[nationNames.length - 1]}`;
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+            const dbo = db.db(mongoUser);
+            const collections = dbo.collection("comradeIndex");
+            collections.find({'id': 'CI'}).toArray((err, items) => {
+                let maxTLA = items[0].maxTLA;
+                nationInfos.forEach(object => {
+                    for (let i = 0; i < 10; i ++) {
+                        object.score[i] = object.score[i] * 10 / maxTLA[i];
+                    }
+                    object.score = object.score.reduce((accumulator, score) => accumulator + score); // Sum of scores
+                });
+                nationInfos.sort((a, b) => b.score - a.score);
+                
+
+                let discordEmbed = new Discord.RichEmbed()
+                    .setColor('#ce0001')
+                    .setAuthor(`Comparison of ${nationsString} by Comrade Index`)
+                    .setTitle(`${nationInfos[0].nation} wins!`)
+                    .setTimestamp()
+
+                for (let i = 0; i < nationInfos.length; i ++) {
+                    discordEmbed.addField(`${i + 1}. ${nationInfos[i].nation}`, `Score: ${nationInfos[i].score}`);
+                }
+
+                receivedMessage.channel.send(discordEmbed);
+            });
+        });
 
      // Verify nation
     } else if (primaryCommand === "verifyme") {
@@ -806,6 +1016,7 @@ function processCommand(receivedMessage) {
 
         const foyer = client.channels.find(channel => channel.name === "foyer");
         foyer.send(`@here Welcome ${receivedMessage.author.toString()} to The Leftist Assembly Discord Server!`);
+        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at #server-rules.`)
 
      // Get registered nation of user
     } else if (primaryCommand === "usernation") {
@@ -868,6 +1079,7 @@ function processCommand(receivedMessage) {
             }
             receivedMessage.channel.send(command);
         }
+
     } else {
         receivedMessage.channel.send("Error: Command does not exist. Please use `!help` to find information on all commands.");
     }
@@ -881,12 +1093,12 @@ client.on('message', receivedMessage => {
     if (receivedMessage.content.toLowerCase() === "f" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db(mongoUser);
-            const collections = dbo.collection("collection");
+            const collections = dbo.collection("counter");
 
-            collections.find({'id': 'counter'}).toArray((err, items) => {
+            collections.find({id: 'counter'}).toArray((err, items) => {
                 const item = items[0];
                 receivedMessage.channel.send(`Respects paid. (${item.respects + 1} respects paid)`);
-                collections.updateOne({'id': "counter"}, {'$inc': {'respects': 1}});
+                collections.updateOne({id: "counter"}, {'$inc': {respects: 1}});
             });
         });
     }
@@ -894,12 +1106,12 @@ client.on('message', receivedMessage => {
     if (receivedMessage.content.toLowerCase() === "good bot" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db(mongoUser);
-            const collections = dbo.collection("collection");
+            const collections = dbo.collection("counter");
 
-            collections.find({'id': 'counter'}).toArray((err, items) => {
+            collections.find({id: 'counter'}).toArray((err, items) => {
                 const item = items[0];
                 receivedMessage.channel.send(`You have voted Unity Machine as being good. (${item.goodbot + 1} votes in total for being good, ${item.badbot} votes in total for being bad)`);
-                collections.updateOne({'id': "counter"}, {'$inc': {'goodbot': 1}});
+                collections.updateOne({id: "counter"}, {'$inc': {goodbot: 1}});
             });
         });
     }
@@ -907,12 +1119,12 @@ client.on('message', receivedMessage => {
     if (receivedMessage.content.toLowerCase() === "bad bot" && receivedMessage.channel.type !== "dm") {
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db(mongoUser);
-            const collections = dbo.collection("collection");
+            const collections = dbo.collection("counter");
 
-            collections.find({'id': 'counter'}).toArray((err, items) => {
+            collections.find({id: 'counter'}).toArray((err, items) => {
                 const item = items[0];
                 receivedMessage.channel.send(`You have voted Unity Machine as being bad. (${item.goodbot} votes in total for being good, ${item.badbot + 1} votes in total for being bad)`);
-                collections.updateOne({'id': "counter"}, {'$inc': {'badbot': 1}});
+                collections.updateOne({id: "counter"}, {'$inc': {badbot: 1}});
             });
         });
     }
@@ -928,7 +1140,7 @@ client.on('ready', () => {
     TLAServer = client.guilds.array()[0];
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
 
-    function reRoleKick() {
+    function Update() {
         const nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations")[0].split(",");
         if (typeof(nations) === 'number') {
             console.log(`Unable to get all nations in the world. Error code: ${nations}`);
@@ -937,10 +1149,11 @@ client.on('ready', () => {
 
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db(mongoUser);
-            const collections = dbo.collection("userNations");
+            const userCollections = dbo.collection("userNations"); // Collection for user-nation key-value pairs
+            const CICollections = dbo.collection("comradeIndex"); // Collection for info about the Comrade Index
 
             TLAServer.members.forEach(member => {
-                collections.find({id: member.id}).toArray((err, items) => {
+                userCollections.find({id: member.id}).toArray((err, items) => {
                     const item = items[0];
                     if (! item) {
                         return
@@ -960,7 +1173,7 @@ client.on('ready', () => {
                         member.removeRole(TLAServer.roles.find(role => role.name === 'Verified'));
                         member.addRole(TLAServer.roles.find(role => role.name === "CTE"));
 
-                        collections.updateOne({"id": member.id}, {'$set': {"nation": "None", "time": new Date().getTime()}});
+                        userCollections.updateOne({id: member.id}, {'$set': {nation: "None", time: new Date().getTime()}});
 
                     } else if (item.time !== "None") {
                         if (moment().diff(item.time, 'hours') >= 168) {
@@ -969,16 +1182,35 @@ client.on('ready', () => {
                     }
                 });
             });
+            links = ["https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=6",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=27",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=28",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=29",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=57",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=68",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=71",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=73",
+                     "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=75"];
+            maxTLA = []
+            links.forEach(link => maxTLA.push(Number(request(link)[2]))); // Get top score of each census in TLA
+            
+
+            numNations = Number(request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=numnations")[0]);
+            place = numNations;
+            do {
+                corruption = Number(request(`https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=51;start=${place}`)[2]);
+                place --
+            } while (Number.isNaN(corruption)) // If some nations do not have a corruption score in the API, then corruption = NaN
+
+            corruption **= -1
+            maxTLA.splice(4, 0, corruption);
+            maxTLA[6] **= 2
+
+            CICollections.updateOne({id: "CI"}, {'$set': {"maxTLA": maxTLA}});
+            console.log("Ready to take commands!");
         });
     }
-
-    reRoleKick();
-    console.log("Ready to take commands!");
-    setInterval(() => {
-        console.log("Giving CTE role...")
-        reRoleKick()
-        console.log("Ready to take commands!")
-    }, 43200000);
+    JSON.parse(process.env.UPDATE) ? Update() : console.log("Ready to take commands!"); // If NationStates is down, process.env.UPDATE can be set to "false" so Unity Machine does not break when starting up
 });
 
 let unverifiedRole;
@@ -990,7 +1222,7 @@ client.on("guildMemberAdd", newMember => {
     MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
         const dbo = db.db(mongoUser);
         const collections = dbo.collection("userNations");
-        collections.insertOne({"id": newMember.id, "nation": "None", "time": new Date().getTime()});
+        collections.insertOne({id: newMember.id, nation: "None", time: new Date().getTime()});
     });
 });
 
@@ -1000,9 +1232,6 @@ client.on("guildMemberRemove", member => {
         const collections = dbo.collection("userNations");
         collections.deleteOne({"id": member.id});
     });
+});
 
-})
-
-const bot_secret_token = "NjA4Mjc3ODU4NzQ1NDUwNDk3.XUmGjA.4OA6wyiw-pl_iQeew9OpFtjVocw";
-
-client.login(bot_secret_token);
+client.login(process.env.BOT_TOKEN);
