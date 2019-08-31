@@ -13,7 +13,7 @@ __Region info__
 `!rcensus`: Get performance of a region in a census
 `!rcompare`: Compare 2-5 regions in a census
 `!rcpower`: Compare 2-5 regions by power
-`!rcwa`: Compare 2-5 regions by number of WA Messages
+`!rcwa`: Compare 2-5 regions by number of WA Nations
 `!rinfo`: Get information about a region
 
 __Other NationStates commands__

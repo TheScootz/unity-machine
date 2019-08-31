@@ -876,7 +876,7 @@ function processCommand(receivedMessage) {
         const nationName = nationScores[0];
         nationScores.shift();
         nationScores = nationScores.map(score => Number(score));
-        nationScores[4] **= -1
+        nationScores[4] **= -0.5
         nationScores[6] **= 2
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db(mongoUser);
@@ -923,7 +923,7 @@ function processCommand(receivedMessage) {
             const nationName = nationScores[0];
             nationScores.shift();
             nationScores = nationScores.map(score => Number(score));
-            nationScores[4] **= -1
+            nationScores[4] **= -0.5
             nationScores[6] **= 2
             nationInfos.push({nation: nationName, score: nationScores});
             nationNames.push(nationName);
@@ -967,13 +967,17 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
             return
         }
-        if (receivedMessage.channel.type !== "dm") {
+        if (receivedMessage.channel.type !== "dm") { // Only allow verification in DMs
             receivedMessage.channel.send(`Error: \`!verifyme\` only works in direct messages. ${helpPrimaryCommand}`);
             return
         }
         const nation = arguments[0];
         const link = `https://www.nationstates.net/cgi-bin/api.cgi?a=verify&nation=${nation}&checksum=${arguments[1]}&q=name+region`; // Return if verification is successful and region of nation
         const response = request(link);
+        if (typeof(response) === 'number') {
+            receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`);
+            return
+        }
         responseObject = {
             nation: response[0],
             region: response[1],
@@ -1016,7 +1020,7 @@ function processCommand(receivedMessage) {
 
         const foyer = client.channels.find(channel => channel.name === "foyer");
         foyer.send(`@here Welcome ${receivedMessage.author.toString()} to The Leftist Assembly Discord Server!`);
-        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at #server-rules.`)
+        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at #server-rules`)
 
      // Get registered nation of user
     } else if (primaryCommand === "usernation") {
@@ -1068,10 +1072,10 @@ function processCommand(receivedMessage) {
             receivedMessage.channel.send("Error: Too many arguments. Use `!help` to find information on all commands.");
         }
         if (arguments.length === 0) {
-            let help = fs.readFileSync("help.txt").toString()
+            let help = fs.readFileSync("help.md").toString()
             receivedMessage.channel.send(help);
         } else {
-            let commands = fs.readFileSync("commands.txt").toString().split("\n\n\n"); // Read commands.txt, convert to string, split by triple newline
+            let commands = fs.readFileSync("commands.md").toString().split("\n\n\n"); // Read commands.txt, convert to string, split by triple newline
             let command = commands.find(c => c.substr(2).split(" ")[0] === arguments[0]);
             if (!command) {
                 receivedMessage.channel.send("Error: Command does not exist. Please use `!help` to find information on all commands.");
@@ -1136,7 +1140,7 @@ client.on('message', receivedMessage => {
 
 client.on('ready', () => {
     console.log("Connected as " + client.user.tag);  // Confirm connection
-    client.user.setActivity('Type "!help" to get info on all commands');
+    client.user.setActivity("Type !help to get all commands");
     TLAServer = client.guilds.array()[0];
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
 
@@ -1202,7 +1206,7 @@ client.on('ready', () => {
                 place --
             } while (Number.isNaN(corruption)) // If some nations do not have a corruption score in the API, then corruption = NaN
 
-            corruption **= -1
+            corruption **= -0.5
             maxTLA.splice(4, 0, corruption);
             maxTLA[6] **= 2
 
@@ -1210,7 +1214,7 @@ client.on('ready', () => {
             console.log("Ready to take commands!");
         });
     }
-    JSON.parse(process.env.UPDATE) ? Update() : console.log("Ready to take commands!"); // If NationStates is down, process.env.UPDATE can be set to "false" so Unity Machine does not break when starting up
+    JSON.parse(process.env.UPDATE) ? Update() : console.log("WARNING: NOT UPDATING \n Ready to take commands!"); // If NationStates is down, process.env.UPDATE can be set to "false" so Unity Machine does not break when starting up
 });
 
 let unverifiedRole;

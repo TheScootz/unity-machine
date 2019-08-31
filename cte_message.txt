@@ -1,4 +1,4 @@
-`${member.displayName}, it appears that your nation ${nation} has ceased to exist! You have been given the CTE role. To remove the CTE role:
+`${member.displayName}, it appears that your nation ${item.nation} has ceased to exist! You have been given the CTE role. To remove the CTE role:
 
 1. Go to the following link: https://www.nationstates.net/page=verify_login
 2. Click 'Copy to clipboard'
