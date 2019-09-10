@@ -1014,13 +1014,12 @@ function processCommand(receivedMessage) {
             collections.updateOne({"id": guildMember.id}, {"$set": {"nation": responseObject.nation, "time": "None"}});
         });
 
-        guildMember.removeRole(guildMember.roles.find(role => role.name === "Unverified"));
         guildMember.setNickname(`${responseObject.nation} \u2713`);
         receivedMessage.channel.send(`Verification as ${responseObject.nation} successful! You should now be able to access The Leftist Assembly server.`);
 
         const foyer = client.channels.find(channel => channel.name === "foyer");
         foyer.send(`@here Welcome ${receivedMessage.author.toString()} to The Leftist Assembly Discord Server!`);
-        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at #server-rules`)
+        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at #server-rules `)
 
      // Get registered nation of user
     } else if (primaryCommand === "usernation") {
@@ -1145,11 +1144,21 @@ client.on('ready', () => {
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
 
     function Update() {
-        const nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations")[0].split(",");
+        let nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations");
         if (typeof(nations) === 'number') {
             console.log(`Unable to get all nations in the world. Error code: ${nations}`);
             return
+        } else {
+            nations = nations[0].split(",");
         }
+        let TLANations = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=nations");
+        if (typeof(TLANations) === 'number') {
+            console.log(`Unable to get all nations in the world. Error code: ${nations}`);
+            return
+        } else {
+            TLANations = TLANations[0].split(":");
+        }
+        
 
         MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
             const dbo = db.db(mongoUser);
@@ -1169,9 +1178,9 @@ client.on('ready', () => {
                         member.send(CTEMessage);
     
                         if (member.roles.find(role => role.name === "Assemblian")) { // User is marked as Assemblian
-                            member.removeRole(member.roles.find(role => role.name === "Assemblian"));
+                            member.removeRole(TLAServer.roles.find(role => role.name === "Assemblian"));
                         } else {
-                            member.removeRole(member.roles.find(role => role.name === "Visitor"));
+                            member.removeRole(TLAServer.roles.find(role => role.name === "Visitor"));
                         }
 
                         member.removeRole(TLAServer.roles.find(role => role.name === 'Verified'));
@@ -1182,6 +1191,15 @@ client.on('ready', () => {
                     } else if (item.time !== "None") {
                         if (moment().diff(item.time, 'hours') >= 168) {
                             member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
+                        }
+
+                    } else {
+                        if (member.roles.find(role => role.name === "Assemblian") && ! TLANations.some(nation => nation === rawNation)) { // Is marked Assemblian but not in TLA
+                            member.removeRole(TLAServer.roles.find(role => role.name === "Assemblian"));
+                            member.addRole(TLAServer.roles.find(role => role.name === "Visitor"));
+                        } else if (TLANations.some(nation => nation === rawNation) && member.roles.find(role => role.name === "Visitor")) { // Is marked Visitor but nation in TLA
+                            member.removeRole(TLAServer.roles.find(role => role.name === "Visitor"));
+                            member.addRole(TLAServer.roles.find(role => role.name === "Assemblian"));
                         }
                     }
                 });

@@ -63,7 +63,6 @@
 `!ncensus 71 Notinhaps`
 `!ncensus 66 fedele`
 
-
 `!nci [Nation]`
 **Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered are case-insensitive.
 **Details:** The command returns the Comrade Index of the specified nation, plus a breakdown of the score.

@@ -26,7 +26,7 @@ __Other commands__
 `!help`: Get information about all commands or a specific command
 `!hot`: Get one of the hottest posts in a subreddit
 `!membercount`: Get the number of members in the server
-`!ooc`: Get a random image from #out-of-context
+`!ooc`: Get a random image from #out-of-context 
 `!pronoun`: Assign pronoun roles to yourself
 `!quote`: Get random quote from leftist leader
 `!rip`: Pay respects
