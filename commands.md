@@ -1,5 +1,4 @@
 `!8ball `
-
 **Usage:** No arguments are required. However, a question can be appended at the end of the command.
 **Details:** The command returns a random answer to a yes-or-no question. It can return one of 20 possible answers.
 **Examples:** 
@@ -16,6 +15,13 @@
 *Returns "The census number for Human Development Index is 68."*
 `!censusnum Industry: Book Publishing`
 *Returns "The census number for Industry: Book Publishing is 24"*
+
+`!deverify `
+
+**Usage:** No arguments are required. If you are marked as "Unverified", this command will not work.
+**Details:** The command allows you to be de-verified and be marked as Unverified, thus allowing you to verify as another nation.
+**Examples:**
+`!deverify`
 
 
 `!help [Command]`
@@ -37,6 +43,14 @@
 `!hot socialism 10`
 `!hot LateStageCapitalism 5 True`
 
+`!insult [Noun]`
+
+**Usage:** The entered noun can contain spaces.
+**Details:** The command sends a message insulting something.
+**Examples:**
+`!insult Hitler`
+`!insult fascism`
+
 
 `!membercount `
 
@@ -47,11 +61,18 @@
 
 
 `!nanniversary [Nation]`
+
 **Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered are case-insensitive.
 **Details:** The command returns the number of days until a given nation's next anniversary.
 **Examples:**
 `!nanniversary delusija`
 `!nanniversary USSRs`
+
+
+`!nationclaims [Nation]`
+
+**Usage:** The specified nation is case-sensitive.
+**Detials:** The command enters the tags of all users that are verified with
 
 
 `!ncensus [Census ID] [Nation]`
@@ -62,6 +83,7 @@
 `!ncensus 12 leftist_assembly_founder`
 `!ncensus 71 Notinhaps`
 `!ncensus 66 fedele`
+
 
 `!nci [Nation]`
 **Usage:** The specified nation name must have the spaces replaced with under scrolls. The nation name entered are case-insensitive.
@@ -117,7 +139,8 @@
 `!npolicy ransium`
 
 
-`!ooc`
+`!ooc `
+
 **Usage:** The command requires no arguments.
 **Details:** The command gets all sent images in the last 100 messages sent in #out-of-context. Then, it filters all images and returns a random one.
 **Examples:**
@@ -128,7 +151,6 @@
 
 **Usage:** The available pronouns can be found by looking at all tags that Unity Machine has been assigned. Pronouns are seperated by a space.
 **Details:** The command removes all pronoun roles you already have, and assigns you the specified pronoun(s).
-
 **Examples:**
 `!pronoun he/him`
 *Assigns you he/him role*
@@ -183,6 +205,14 @@
 `!rcwa libertarian_socialist_confederation north_korea`
 
 
+`!remindme [Time after now] [String`
+**Usage:** The "Time after now" argument must be in the form of `%d%h%m` where `%` denotes a number. The `%d` part is optional. The argument is case-insensitive. The string argumrnt can contain spaces.
+**Details:** This command allows a user to send a message to themself after a specified period of time. This period can be anywhere between 1 minute and 365 days. Should a user leave the server at any point, all scheduled messages will be deleted.
+**Examples:**
+`!remindme 1H30M Do homework`
+`!remindme 13d8h0m Create poll for elections`
+
+
 `!rinfo [Region]`
 
 **Usage:** The specified region name must have the spaces replaced with under scrolls. The region name entered is case-insensitive. If a region name is not specified, Unity Machine will find information about The Leftist Assembly.
@@ -215,6 +245,7 @@
 
 
 `!usernation [Username and Tag]`
+
 **Usage:** You can find the username and tag of a Discord User by clicking on their name on the right of the Discord Client in The Leftist Assembly server.
 **Details:** The command returns the nation a given user is registered as.
 **Examples:**
@@ -228,3 +259,20 @@
 **Details:** The command verifies that a Discord User owns a nation, and allows them to read and send messages. If the nation is in The Leftist Assembly, they will be given the Assemblian role. If the nation is in an embassy of The Leftist Assembly, they will be given the Visitor role. Otherwise, they will not be verified successfully.
 **Examples:**
 `!verifyme nottinhaps XsOIoNxQWtAlZfIeRgx8obMgJWwOA6znSDmA9xJQKBA`
+
+
+`!version `
+
+**Usage:** The command requires no arguments.
+**Details:** The command returns the current version of Unity Machine.
+**Examples:**
+`!version`
+
+
+`!wikipedia [Search term]`
+
+**Usage:** The search term can contain spaces.
+**Details:** The command finds the Wikipedia page with the given search term. A summary will then be sent. If there is ambiguity, a Disambiguation List will be sent.
+**Examples:**
+`!wikipedia Council Communism`
+`!wikipedia Ocalan`

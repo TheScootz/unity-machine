@@ -4,9 +4,22 @@ const fs = require('fs');
 const he = require('he');
 const ordinal = require('ordinal');
 const moment = require('moment');
-const MongoClient = require('mongodb').MongoClient;
+const mongo = require('mongodb');
+const MongoClient = mongo.MongoClient;
+const schedule = require('node-schedule');
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+
+const version = "1.4.1"; // Version
+
+let numRequests = 0;
+schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
+
+function tooManyRequests(message) {
+    let numSeconds = new Date().getSeconds();
+    numSeconds = (Math.ceil(numSeconds / 30) * 30) - numSeconds;
+    message.channel.send(`Error: Too many API requests. Please wait ${numSeconds} ${numSeconds === 1 ? "second" : "seconds"} before trying again.`); // "second" if waiting 1 second, else "seconds"
+}
 
 const mongoUrl = process.env.MONGODB_URI;
 const mongoUser = process.env.MONGODB_USER;
@@ -19,12 +32,21 @@ function getRandomObject(ary) {
     return ary[randomIndex];
 }
 
+let trophies = openFile("trophies.txt");
+let censusNames = openFile("censusNames.txt");
+let censusDescriptions = openFile("censusDescriptions.txt");
+
+trophies[255] = "mostnations"; // Census no. 255 is Number of Nations
+censusNames[255] = "Number of Nations";
+censusDescriptions[255] = "The World Census tracked the movements of military-grade geo-airlifting helicopters to determine which regions have the most nations.";
+const NSThumbnail = "https://theredand.black/uploads/monthly_2017_03/nationstates.png.e8aa5b8de1bd5430dc950d0b297952ab.png";
+
 // Read file and split by newline
 function openFile(filename) {
     fileContent = fs.readFileSync(filename); // Open file
     fileContent = fileContent.toString(); // Convert bytes to string
     fileContent = fileContent.split("\n");
-    return fileContent
+    return fileContent;
 }
 
 let TLAServer; // Guild object of TLA Server
@@ -42,9 +64,9 @@ function request(url) {
         let content = he.decode(striptags(xhr.responseText));
         content = content.split("\n");
         content = content.filter(x => x != "");
-        return content
+        return content;
     } else { // Error
-        return xhr.status
+        return xhr.status;
     }
 }
 
@@ -53,19 +75,10 @@ function processCommand(receivedMessage) {
     const splitCommand = fullCommand.split(" "); // Split the message up in to pieces for each space
     const primaryCommand = splitCommand[0]; // The first word directly after the exclamation is the command
     let arguments = splitCommand.slice(1); // All other words are arguments/parameters/options for the command
-    const code = "```" // Add this at front and end of string in Discord to turn into code formatting
 
     let nickname = receivedMessage.channel.type === "dm" ? receivedMessage.author.username : TLAServer.member(receivedMessage.author).displayName; // Nickname of user, returns username if contacted via DM
 
     const helpPrimaryCommand = `Please use \`!help ${primaryCommand}\` to show more information.`; // Directs user to use !help command in error
-
-    let trophies = openFile("trophies.txt");
-    let censusNames = openFile("censusNames.txt");
-    let censusDescriptions = openFile("censusDescriptions.txt");
-    trophies[255] = "mostnations"; // Census no. 255 is Number of Nations
-    censusNames[255] = "Number of Nations";
-    censusDescriptions[255] = "The World Census tracked the movements of military-grade geo-airlifting helicopters to determine which regions have the most nations.";
-    const NSThumbnail = "https://theredand.black/uploads/monthly_2017_03/nationstates.png.e8aa5b8de1bd5430dc950d0b297952ab.png";
     
     // Roll dice
     if (primaryCommand === "roll") {
@@ -78,7 +91,7 @@ function processCommand(receivedMessage) {
         operations = operations.filter(element => element !== undefined && element !== ''); // '' and undefined can pop up in operations
         if (! (diceExp.every(element => diceRegex.test(element)) && operations.every(element => opRegex.test(element)))) {
             receivedMessage.channel.send("Error: Incorrect dice expression.");
-            return
+            return;
         }
 
         let numDice = 0;
@@ -95,10 +108,10 @@ function processCommand(receivedMessage) {
        });
         if (numDice > 10000) {
             console.log("Error: You are rolling too many dice at once.");
-            return
+            return;
         }
         if (tooManyFaces) { // If there are too many faces on one die
-            return
+            return;
         }
 
         let results = [];
@@ -150,17 +163,18 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "8ball") {
         let eightBallResponses = openFile("8ball.txt");
         let randomResponse = getRandomObject(eightBallResponses);
-        receivedMessage.channel.send(`\u{1f52e} ${randomResponse}, ${nickname}.`);
+        receivedMessage.channel.send(`\u{1f3b1} ${randomResponse}, ${nickname}.`);
     
     // Get random quote
     } else if (primaryCommand === "quote") {
         let quotes = openFile("quotes.txt");
         if (arguments.length >= 1) {
-            arguments = arguments.join(" ")
+            arguments = arguments.join(" ");
             quotes = quotes.filter(quote => quote.toLowerCase().endsWith(arguments.toLowerCase())); // toLowerCase() allows for case-insensitive matching
             if (quotes.length === 0) { // No quotes
                 receivedMessage.channel.send(`Sorry, but there are no quotes from ${arguments}. If you want quotes from them, please contact The Comrade#4859.`);
-                return
+                return;
+
             }
         }
         let randomQuote = getRandomObject(quotes);
@@ -170,19 +184,25 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "ncensus") {
         if (arguments.length < 2) {
             receivedMessage.channel.send(`Error: At least 2 arguments are required with the !ncensus command. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (arguments.length > 2) {
             receivedMessage.channel.send(`Error: Too many arguments. Make sure you have replaced spaces with underscrolls. ${helpPrimaryCommand}`);
-            return
+            return;
         }
 
         let censusID = arguments[0];
         const nation = arguments[1];
         if (! (Number.isInteger(Number(censusID)) && 0 <= censusID && censusID <= 85)) { //Census ID is not integer, below 0 or over 85
             receivedMessage.channel.send(`Error: Invalid Census ID "${censusID}". ${helpPrimaryCommand}`);
-            return
+            return;
         }
+
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests ++; // 1 request
 
         censusID = Number(censusID);
         const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=name+region+flag+census;scale=${censusID};mode=score+rank+rrank+prank+prrank` // Link used to find information on nations
@@ -195,7 +215,7 @@ function processCommand(receivedMessage) {
                 receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`)
             }
 
-            return
+            return;
         }
         const responseObject = {
             nation: response[0],
@@ -236,18 +256,23 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "ncompare") {
         if (arguments.length < 3) {
             receivedMessage.channel.send(`Error: At least 3 arguments are required with the !ncompare command. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (arguments.length > 6) {
             receivedMessage.channel.send(`Error: Over maximum number of 5 nations. Make sure you have replaced spaces with underscrolls. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + arguments.length - 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests += arguments.length - 1;
 
         let censusID = arguments[0];
         const nations = arguments.slice(1);
         if (! (Number.isInteger(Number(censusID)) && 0 <= censusID && censusID <= 85)) {
             receivedMessage.channel.send(`Error: Invalid Census ID "${censusID}". ${helpPrimaryCommand}`);
-            return
+            return;
         }
         let nationScores = []; // Array containing objects of nation and score
         let nationNames = []; // Array of all nation "proper" names
@@ -256,10 +281,16 @@ function processCommand(receivedMessage) {
             const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=${censusID};mode=score`;
             const response = request(link);
             if (typeof(response) === 'number') {
-                receivedMessage.channel.send(response === 404 ? `Error: The specified nation ${link} was not found` : `An unexpected error occured. Error code: ${response}`); 
+                if (response === 404) {
+                    receivedMessage.channel.send(`Error: "${nation}" was not found.`)
+                } else {
+                    receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`)
+                }
+
                 error = true;
-                return
+                return;
             }
+
             nationName = response[0];
             score =  Number(response[1]);
             nationScores.push({nation: nationName, score: score});
@@ -287,8 +318,13 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "ninfo") {
         if (arguments.length < 1) {
             receivedMessage.channel.send(`Error: 1 argument is required with the !ninfo command. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + 3 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests += 3;
 
         let nation = arguments[0];
         
@@ -301,8 +337,9 @@ function processCommand(receivedMessage) {
                 receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`)
             }
 
-            return
+            return;
         }
+
         const responseObject = {
             fullName: response[0],
             motto: response[1],
@@ -335,11 +372,11 @@ function processCommand(receivedMessage) {
         let regionResponse = request(linkRegion) // All WA nations
         if (typeof(regionResponse) === 'number') {
             receivedMessage.channel.send(`An unexpected error occured. Error code: ${regionResponse}`)
-            return
+            return;
         }
         if (typeof(WAResponse) === 'number') {
             receivedMessage.channel.send(`An unexpected error occured. Error code: ${WAResponse}`)
-            return
+            return;
         }
 
         WAResponse = WAResponse[0].split(',');
@@ -366,8 +403,13 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "npolicy") {
         if (arguments.length < 1) {
             receivedMessage.channel.send(`Error: 1 argument is required with the !ninfo command. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests ++;
 
         let nation = arguments[0];
         let link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=policies`;
@@ -379,7 +421,7 @@ function processCommand(receivedMessage) {
                 receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`);
             }
 
-            return
+            return;
         }
         
         let dataArray = [];
@@ -404,14 +446,24 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "rcensus") {
         if (arguments.length > 2) {
             receivedMessage.channel.send(`Error: Too many arguments. Make sure you have replaced spaces with underscrolls. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (arguments.length < 1) {
+            receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
+            return;
+        }
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+
+        numRequests ++;
         let censusID = arguments[0]
         const region = arguments.length === 1 ? "the_leftist_assembly" : arguments[1];
         
         if (! (Number.isInteger(Number(censusID)) && ((0 <= censusID && censusID <= 85) ||Number(censusID) === 255))) { // Census ID 255 refers to number of nations in a region
             receivedMessage.channel.send(`Error: Invalid Census ID "${censusID}". ${helpPrimaryCommand}`);
-            return
+            return;
         }
 
         censusID = Number(censusID);
@@ -425,7 +477,7 @@ function processCommand(receivedMessage) {
                 receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`)
             }
 
-            return
+            return;
         }
 
         const responseObject = {
@@ -462,8 +514,15 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "rinfo") {
         if (arguments.length > 1) {
             receivedMessage.channel.send(`Error: Too many arguments. Please make sure you have replaced spaces with underscrolls. ${helpPrimaryCommand}`)
-            return
+            return;
         }
+        if (numRequests + 3 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests += 3;
+
+
         const region = arguments.length === 0 ? "the_leftist_assembly" : arguments[0];
         const regionLink = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=delegate+delegatevotes+nations+numnations+founder+founded+name+flag+power`;
         const WALink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members";
@@ -472,11 +531,11 @@ function processCommand(receivedMessage) {
 
         if (typeof(regionResponse) === 'number') {
             receivedMessage.channel.send(`An unexpected error occured. Error code: ${regionResponse}`)
-            return
+            return;
         }
         if (typeof(WAResponse) === 'number') {
             receivedMessage.channel.send(`An unexpected error occured. Error code: ${WAResponse}`)
-            return
+            return;
         }
         responseObject = {
             name: regionResponse[0],
@@ -494,6 +553,7 @@ function processCommand(receivedMessage) {
         if (regionResponse[3] === "0"){ // No Delegate
             responseObject.delegate = "None";
             responseObject.delegateEndos = 0;
+            numRequests --; // Overcounting number of requests
         } else {
             const delegateLink = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${regionResponse[3]}&q=name`;
             responseObject.delegate = request(delegateLink);
@@ -501,6 +561,7 @@ function processCommand(receivedMessage) {
 
         if (regionResponse[5] === "0") { // No founder
             responseObject.founder = "Game created region";
+            numRequests --;
         } else {
             const founderLink = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${regionResponse[5]}&q=name`;
             responseObject.founder = `Founded by ${request(founderLink)}`;
@@ -533,7 +594,7 @@ function processCommand(receivedMessage) {
                 name: temparray[0],
                 date: moment.utc(`${year}${temparray[1]}`)
             };
-            return object
+            return object;
         });
         for (i = 0; i < holidays.length; i ++) {
             if (today.diff(holidays[i].date, 'day') > 0) {
@@ -574,7 +635,7 @@ function processCommand(receivedMessage) {
             }
         });
         if (! arguments.every(rolename => pronounRoles.find(role => role.name === rolename))) {
-            return
+            return;
         }
 
         guildMember = TLAServer.member(receivedMessage.author);
@@ -603,18 +664,23 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "rcompare") {
         if (arguments.length < 3) {
             receivedMessage.channel.send(`Error: At least 3 arguments are required with the !rcompare command. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (arguments.length > 6) {
             receivedMessage.channel.send(`Error: Over maximum number of 5 regions. Make sure you have replaced spaces with underscrolls. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + arguments.length - 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests += arguments.length - 1;
 
         let censusID = arguments[0];
         const regions = arguments.slice(1);
         if (! (Number.isInteger(Number(censusID)) && ((0 <= censusID && censusID <= 85) ||Number(censusID) === 255))) {
             receivedMessage.channel.send(`Error: Invalid Census ID "${censusID}". ${helpPrimaryCommand}`);
-            return
+            return;
         }
 
         let regionScores = [];
@@ -626,7 +692,8 @@ function processCommand(receivedMessage) {
             if (typeof(response) === 'number') {
                 receivedMessage.channel.send(response === 404 ? `The region "${region}" was not found.` : `An unexpected error occured. Error code: ${regionResponse}`);
                 error = true;
-                return
+                return;
+
             }
             regionName = response[0];
             score =  Number(response[1]);
@@ -656,23 +723,24 @@ function processCommand(receivedMessage) {
             if (arguments.length < 2) { // 1 or less arguments
                 if (arguments.length === 0) { // No arguments
                     receivedMessage.channel.send(`Error: This command requires at least one command. ${helpPrimaryCommand}`);
-                    return
+                    return;
+    
                 }
                 arguments[1] = "5";
             }
             arguments[2] = "False";
         } else if (arguments.length > 3) {
             receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
 
         if (! (Number.isInteger(Number(arguments[1])) && Number(arguments[1]) > 0 && Number(arguments[1]) <= 20)) { // "Number of posts" argument not an integer or less than 1
             receivedMessage.channel.send(`Error: "Number of Posts" argument is not an integer. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (! (arguments[2] === "False" || arguments[2] === "True")) { // 
             receivedMessage.channel.send(`Error: The "Sticky posts included" argument must be either "True" or "False". ${helpPrimaryCommand}`);
-            return
+            return;
         }
 
         const pythonProcess = childProcess.spawn('python3',["reddit.py", arguments[0], arguments[1], arguments[2]]);
@@ -684,9 +752,10 @@ function processCommand(receivedMessage) {
                 } else if (data === "Error Message: No NSFW subreddits allowed.\n" || data === "Error Message: Subreddit is private.\n") {
                     receivedMessage.channel.send(data);
                 } else {
-                    receivedMessage.channel.send(`An unexpected error occured. ${data}`);
+                    receivedMessage.channel.send(`An unexpected error occured. Error code: ${data}`);
                 }
-                return
+                return;
+
             }
 
             submissionInfo = JSON.parse(data);
@@ -716,12 +785,17 @@ function processCommand(receivedMessage) {
     } else if  (primaryCommand === "nanniversary") {
         if (arguments.length === 0) {
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (arguments.length > 1) {
             receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests ++;
 
         const today = moment().utc().startOf('day');
         let anniversary = request(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${arguments[0]}&q=name+foundedtime`);
@@ -731,12 +805,12 @@ function processCommand(receivedMessage) {
             } else {
                 receivedMessage.channel.send(`An unexpected error occured. Error code: ${anniversary}`);
             }
-            return
+            return;
         }
 
         if (anniversary[1] === "0") { // Founded in Antiquity
             receivedMessage.channel.send("Sorry, the requested nation was founded in Antiquity.");
-            return
+            return;
         }
         const nation = anniversary[0];
         anniversary = moment.unix(anniversary[1]).utc().startOf('day');
@@ -745,7 +819,7 @@ function processCommand(receivedMessage) {
 
         if (anniversary.isSame(today)) { // Anniversary is today
             years = ordinal(years); // Conver to ordinal number
-            receivedMessage.channel.send(`${nation}'s ${years} anniversary is today! \u{1f389}`);
+            receivedMessage.channel.send(`${nation}'s ${years} anniversary is today! �`);
         } else {
             anniversary.add(1, 'y'); // Add another year (next anniversary must be in the future)
             years = ordinal(years + 1)
@@ -767,17 +841,17 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "rcwa") {
         if (arguments.length < 2) {
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         } else if (arguments.length > 5) {
             receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
 
         const WALink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members";
         let WAResponse = request(WALink); // All region nations
         if (typeof(WAResponse) === 'number') {
             receivedMessage.channel.send(`An unexpected error occured. Error code: ${WAResponse}`);
-            return
+            return;
         }
         WAResponse = WAResponse[0].split(",");
 
@@ -789,7 +863,8 @@ function processCommand(receivedMessage) {
             if (typeof(regionResponse) === 'number') {
                 receivedMessage.channel.send(regionResponse === 404 ? `The region "${region}" was not found.` : `An unexpected error occured. Error code: ${regionResponse}`);
                 error = true;
-                return
+                return;
+
             }
 
             regionResponse[1] = regionResponse[1].split(":");
@@ -816,17 +891,22 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "rcpower") {
         if (arguments.length < 2) {
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         } else if (arguments.length > 5) {
             receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + arguments.length + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests += arguments.length + 1;
 
         const WALink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members";
         let WAResponse = request(WALink); // All region nations
         if (typeof(WAResponse) === 'number') {
             receivedMessage.channel.send(`An unexpected error occured. Error code: ${WAResponse}`);
-            return
+            return;
         }
         WAResponse = WAResponse[0].split(",");
 
@@ -838,7 +918,8 @@ function processCommand(receivedMessage) {
             if (typeof(regionResponse) === 'number') {
                 receivedMessage.channel.send(regionResponse === 404 ? `The region "${region}" was not found.` : `An unexpected error occured. Error code: ${regionResponse}`);
                 error = true;
-                return
+                return;
+
             }
 
             regionResponse[1] = regionResponse[1].split(":");
@@ -865,12 +946,18 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "nci") {
         if (arguments.length === 0) {
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests += 1;
+
         let nationScores = request(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${arguments[0]};q=name+census;scale=6+27+28+29+51+57+68+71+73+75;mode=score`);
         if (typeof(nationScores) === 'number') {
             receivedMessage.channel.send(nationScores === 404 ? "Error: The specified nation does not exist." : `An unexpected error occured. Error code: ${nationScores}`);
-            return
+            return;
         }
 
         const nationName = nationScores[0];
@@ -878,11 +965,11 @@ function processCommand(receivedMessage) {
         nationScores = nationScores.map(score => Number(score));
         nationScores[4] **= -0.5
         nationScores[6] **= 2
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const collections = dbo.collection("comradeIndex");
-            collections.find({'id': 'CI'}).toArray((err, items) => {
-                let maxTLA = items[0].maxTLA;
+            collections.findOne({'id': 'CI'}).then(item => {
+                let maxTLA = item.maxTLA;
 
                 let CIScores = [];
                 for (let i = 0; i < 10; i ++) {
@@ -906,19 +993,26 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "ncompareci") {
         if (arguments.length < 2) {
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (arguments.length > 5) {
             receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + arguments.length > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests += arguments.length;
+
         let nationInfos = [];
         let nationNames = [];
         arguments.forEach(nation => {
             let nationScores = request(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=6+27+28+29+51+57+68+71+73+75;mode=score`);
             if (typeof(nationScores) === 'number') {
                 receivedMessage.channel.send(nationScores === 404 ? `Error: "${nation}" does not exist.` : `An unexpected error occured. Error code: ${nationScores}`);
-                return
+                return;
+
             }
             const nationName = nationScores[0];
             nationScores.shift();
@@ -929,11 +1023,11 @@ function processCommand(receivedMessage) {
             nationNames.push(nationName);
         });
         nationsString = `${nationNames.slice(0, nationNames.length - 1).join(", ")} and ${nationNames[nationNames.length - 1]}`;
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const collections = dbo.collection("comradeIndex");
-            collections.find({'id': 'CI'}).toArray((err, items) => {
-                let maxTLA = items[0].maxTLA;
+            collections.findOne({'id': 'CI'}).then(item => {
+                let maxTLA = item.maxTLA;
                 nationInfos.forEach(object => {
                     for (let i = 0; i < 10; i ++) {
                         object.score[i] = object.score[i] * 10 / maxTLA[i];
@@ -957,26 +1051,107 @@ function processCommand(receivedMessage) {
             });
         });
 
+     // Search wikipedia
+    } else if (primaryCommand === "wikipedia") {
+        const pageRequest = arguments.join(" ");
+        const pythonProcess = childProcess.spawn('python3',["wiki.py", pageRequest]);
+        pythonProcess.stdout.on('data', (data) => { // Received data from reddit.py
+            data = JSON.parse(data.toString());
+            if (data.type === "Error") {
+                receivedMessage.channel.send(`An unexpected error occured. Error code: ${data.data}`);
+                return;
+
+            }
+            const discordEmbed =  new Discord.RichEmbed()
+                .setColor('#ce0001')
+                .setAuthor(`Wikipedia: ${pageRequest}`, "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1920px-Wikipedia-logo-v2.svg.png", `https://en.wikipedia.org/wiki/${pageRequest.replace(/ /g, '_')}`)
+                .setDescription(data.data)
+            
+            receivedMessage.channel.send(discordEmbed);
+        });
+
+     // Remind someone about something
+    } else if (primaryCommand === "remindme") {
+        if (arguments.length < 2) {
+            receivedMessage.channel.send(`Error: Not enough arguments. ${helpPrimaryCommand}`);
+            return;
+        }
+        let info = arguments[0].match(/^(?:(\d+)d)?(\d+)h(\d+)m$/i);
+        let reminderMessage = arguments.splice(1).join(" ");
+        if (! info) {
+            receivedMessage.channel.send(`Error: Invalid duration format. ${helpPrimaryCommand}`);
+            return;
+        }
+        info = info.splice(1, 3)
+        if (! info[0]) info[0] = "0";
+        info = info.map(item => item = Number(item));
+        if (info.every(item => item === 0)) { // 0 time
+            receivedMessage.channel.send(`Error: Invalid duration. ${helpPrimaryCommand}`);
+            return;
+        }
+        if ((info[0] + info[1] / 24 + info[2] / 1440) > 365) { // Over 365 days
+            receivedMessage.channel.send(`Error: Invalid duration. ${helpPrimaryCommand}`);
+            return;
+        }
+
+        const dueTime = new Date().getTime() + 86400000 * info[0] + 3600000 * info[1] + 60000 * info[2];
+        let _id;
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
+            const dbo = db.db(mongoUser);
+            const collections = dbo.collection("scheduledReminders");
+            collections.insertOne({"time": dueTime, "id": receivedMessage.author.id, "message": reminderMessage}).then(item => {
+                assignedID = JSON.parse(item.toString());
+                assignedID = new mongo.ObjectID(assignedID.ops[0]._id)
+                
+            });
+        });
+        schedule.scheduleJob(new Date(dueTime), () => {
+            MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
+                const dbo = db.db(mongoUser);
+                const collections = dbo.collection("scheduledReminders");
+
+                collections.findOne({"_id": assignedID}).then(object => { // If object with _id exists
+                    if (object) {
+                        receivedMessage.author.send(`Reminder: ${reminderMessage}`);
+                        collections.deleteOne(object);
+                    }
+                });
+            });
+        });
+
+        receivedMessage.channel.send("Your reminder request has been logged.")
+
+     // Insult someone
+    } else if (primaryCommand === "insult") {
+        receivedMessage.channel.send(arguments.length > 0 ? `Fuck ${arguments.join(" ")}!` : "Who do you want me to insult again?");
+
      // Verify nation
     } else if (primaryCommand === "verifyme") {
         if (arguments.length > 2) {
             receivedMessage.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (arguments.length < 2) {
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
-            return
+            return;
         }
         if (receivedMessage.channel.type !== "dm") { // Only allow verification in DMs
             receivedMessage.channel.send(`Error: \`!verifyme\` only works in direct messages. ${helpPrimaryCommand}`);
-            return
+            return;
         }
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        numRequests ++;
+
+
         const nation = arguments[0];
         const link = `https://www.nationstates.net/cgi-bin/api.cgi?a=verify&nation=${nation}&checksum=${arguments[1]}&q=name+region`; // Return if verification is successful and region of nation
         const response = request(link);
         if (typeof(response) === 'number') {
             receivedMessage.channel.send(`An unexpected error occured. Error code: ${response}`);
-            return
+            return;
         }
         responseObject = {
             nation: response[0],
@@ -1008,18 +1183,18 @@ function processCommand(receivedMessage) {
             guildMember.removeRole(guildMember.roles.find(role => role.name === "CTE"));
         }
 
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const collections = dbo.collection("userNations");
             collections.updateOne({"id": guildMember.id}, {"$set": {"nation": responseObject.nation, "time": "None"}});
         });
 
-        guildMember.setNickname(`${responseObject.nation} \u2713`);
+        guildMember.setNickname(`${responseObject.nation} ✓`);
         receivedMessage.channel.send(`Verification as ${responseObject.nation} successful! You should now be able to access The Leftist Assembly server.`);
 
         const foyer = client.channels.find(channel => channel.name === "foyer");
         foyer.send(`@here Welcome ${receivedMessage.author.toString()} to The Leftist Assembly Discord Server!`);
-        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at #server-rules `)
+        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at ${TLAServer.channels.find(channel => channel.name === 'server-rules').toString()}.`)
 
      // Get registered nation of user
     } else if (primaryCommand === "usernation") {
@@ -1027,17 +1202,16 @@ function processCommand(receivedMessage) {
         const user = client.users.find(u => u.tag === tag);
         if (! user) {
             receivedMessage.channel.send(`Error: ${tag} is not part of The Leftitst Assembly Server.`);
-            return
+            return;
         }
-        if (! TLAServer.member(user).roles.find(role => role.name === "Verified")) { // Not yet verified
+        if (TLAServer.member(user).roles.find(role => role.name === "Unverified")) { // Not yet verified
             receivedMessage.channel.send(`Error: ${tag} is not verified yet.`)
+            return;
         }
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const collections = dbo.collection("userNations");
-            collections.find({"id": user.id}).toArray((err, items) => {
-                receivedMessage.channel.send(`${tag} is verified as ${items[0].nation}.`)
-            });
+            collections.findOne({"id": user.id}).then(item => receivedMessage.channel.send(`${tag} is verified as ${item.nation}.`));
         });
      
      // Get number of members
@@ -1065,6 +1239,71 @@ function processCommand(receivedMessage) {
         }
         receivedMessage.channel.send(message.join("\n"))
 
+     // Get the user(s) that claim a particular nation
+    } else if (primaryCommand === "nationclaims") {
+        const nation = arguments.join(" ");
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
+            const dbo = db.db(mongoUser);
+            const collections = dbo.collection("userNations");
+            collections.find({"nation": nation}).toArray((err, items) => {
+                if (items.length === 0) { // No users claim nation
+                    receivedMessage.channel.send(`No users claim ${nation}.`);
+                    return;
+    
+                }
+                items = items.map(item => client.users.find(u => u.id === item.id).tag); // Convert IDs to Tags
+                if (items.length === 1) {
+                    receivedMessage.channel.send(`${nation} is claimed by ${items[0]}`);
+                } else {
+                    receivedMessage.channel.send(`${nation} is claimed by ${items.splice(0, -1)} and ${items[-1]}`);
+                }
+            });
+        });
+
+    // Unverify yourself
+    } else if (primaryCommand === "deverify") {
+        if (receivedMessage.channel.type !== "dm") { // Only allow deverification in DMs
+            receivedMessage.channel.send(`Error: \`!deverify\` only works in direct messages. ${helpPrimaryCommand}`);
+            return;
+        }
+
+        const guildMember = TLAServer.member(receivedMessage.author);
+        if (guildMember.roles.find(role => role.name === "Unverified")) { // Only allow deverification to people that have been verified
+            receivedMessage.channel.send(`Error: You are not verified yet, so you cannot use \`!deverify\`. ${helpPrimaryCommand}`);
+            return;
+        }
+        guildMember.addRole(TLAServer.roles.find(role => role.name === "Unverified"));
+
+        if (guildMember.roles.find(role => role.name === "CTE")) {
+            guildMember.removeRole(guildMember.roles.find(role => role.name === "CTE"));
+
+            MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
+                const dbo = db.db(mongoUser);
+                const collections = dbo.collection("userNations");
+                collections.updateOne({"id": guildMember.id}, {"$set": {"nation": "None"}});
+            });
+
+        } else { // Either the member is Assemblian or Visitor, either way they have the Verified role
+            guildMember.removeRole(guildMember.roles.find(role => role.name === "Verified"));
+
+            MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
+                const dbo = db.db(mongoUser);
+                const collections = dbo.collection("userNations");
+                collections.updateOne({"id": guildMember.id}, {"$set": {"nation": "None", "time": new Date().getTime()}});
+            });
+
+            if (guildMember.roles.find(role => role.name === "Assemblian")) {
+                guildMember.removeRole(guildMember.roles.find(role => role.name === "Assemblian"));
+            } else {
+                guildMember.removeRole(guildMember.roles.find(role => role.name === "Visitor"));
+            }
+        }
+        receivedMessage.channel.send("Deverification successful!")
+
+     // Get current version number
+    } else if (primaryCommand === "version") {
+        receivedMessage.channel.send(`The current version of Unity Machine is ${version}`)
+
      // Get information about commands
     } else if (primaryCommand === "help") {
         if (arguments.length > 1) {
@@ -1078,8 +1317,9 @@ function processCommand(receivedMessage) {
             let command = commands.find(c => c.substr(2).split(" ")[0] === arguments[0]);
             if (!command) {
                 receivedMessage.channel.send("Error: Command does not exist. Please use `!help` to find information on all commands.");
-                return
+                return;
             }
+            
             receivedMessage.channel.send(command);
         }
 
@@ -1094,12 +1334,11 @@ client.on('message', receivedMessage => {
     }
 
     if (receivedMessage.content.toLowerCase() === "f" && receivedMessage.channel.type !== "dm") {
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const collections = dbo.collection("counter");
 
-            collections.find({id: 'counter'}).toArray((err, items) => {
-                const item = items[0];
+            collections.findOne({id: 'counter'}).then(item => {
                 receivedMessage.channel.send(`Respects paid. (${item.respects + 1} respects paid)`);
                 collections.updateOne({id: "counter"}, {'$inc': {respects: 1}});
             });
@@ -1107,12 +1346,11 @@ client.on('message', receivedMessage => {
     }
 
     if (receivedMessage.content.toLowerCase() === "good bot" && receivedMessage.channel.type !== "dm") {
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const collections = dbo.collection("counter");
 
-            collections.find({id: 'counter'}).toArray((err, items) => {
-                const item = items[0];
+            collections.findOne({id: 'counter'}).then(item => {
                 receivedMessage.channel.send(`You have voted Unity Machine as being good. (${item.goodbot + 1} votes in total for being good, ${item.badbot} votes in total for being bad)`);
                 collections.updateOne({id: "counter"}, {'$inc': {goodbot: 1}});
             });
@@ -1120,12 +1358,11 @@ client.on('message', receivedMessage => {
     }
 
     if (receivedMessage.content.toLowerCase() === "bad bot" && receivedMessage.channel.type !== "dm") {
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+        MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const collections = dbo.collection("counter");
 
-            collections.find({id: 'counter'}).toArray((err, items) => {
-                const item = items[0];
+            collections.findOne({id: 'counter'}).then(item => {
                 receivedMessage.channel.send(`You have voted Unity Machine as being bad. (${item.goodbot} votes in total for being good, ${item.badbot + 1} votes in total for being bad)`);
                 collections.updateOne({id: "counter"}, {'$inc': {badbot: 1}});
             });
@@ -1144,33 +1381,33 @@ client.on('ready', () => {
     unverifiedRole = TLAServer.roles.find(role => role.name === 'Unverified');
 
     function Update() {
-        let nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations");
+        numRequests = 11; // 11 requests will be made
+
+        let nations = request("https://www.nationstates.net/cgi-bin/api.cgi?q=nations"); // All nations in the world
         if (typeof(nations) === 'number') {
             console.log(`Unable to get all nations in the world. Error code: ${nations}`);
-            return
+            return;
         } else {
             nations = nations[0].split(",");
         }
-        let TLANations = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=nations");
+        let TLANations = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=nations"); // All TLA nations
         if (typeof(TLANations) === 'number') {
             console.log(`Unable to get all nations in the world. Error code: ${nations}`);
-            return
+            return;
         } else {
             TLANations = TLANations[0].split(":");
         }
-        
 
-        MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+
+        MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
             const dbo = db.db(mongoUser);
             const userCollections = dbo.collection("userNations"); // Collection for user-nation key-value pairs
             const CICollections = dbo.collection("comradeIndex"); // Collection for info about the Comrade Index
+            const scheduledReminders = dbo.collection("scheduledReminders"); // Collection for 
 
             TLAServer.members.forEach(member => {
-                userCollections.find({id: member.id}).toArray((err, items) => {
-                    const item = items[0];
-                    if (! item) {
-                        return
-                    }
+                userCollections.findOne({id: member.id}).then(item => {
+                    if (! item) return;
 
                     const rawNation = item.nation.toLowerCase().replace(/ /g, "_");
                     if ((! nations.some(nation => nation === rawNation)) && member.roles.find(role => role.name === "Verified")) { // User is verified but not marked as CTE yet
@@ -1186,24 +1423,29 @@ client.on('ready', () => {
                         member.removeRole(TLAServer.roles.find(role => role.name === 'Verified'));
                         member.addRole(TLAServer.roles.find(role => role.name === "CTE"));
 
-                        userCollections.updateOne({id: member.id}, {'$set': {nation: "None", time: new Date().getTime()}});
+                        userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime()}});
 
                     } else if (item.time !== "None") {
                         if (moment().diff(item.time, 'hours') >= 168) {
                             member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
                         }
 
-                    } else {
-                        if (member.roles.find(role => role.name === "Assemblian") && ! TLANations.some(nation => nation === rawNation)) { // Is marked Assemblian but not in TLA
-                            member.removeRole(TLAServer.roles.find(role => role.name === "Assemblian"));
-                            member.addRole(TLAServer.roles.find(role => role.name === "Visitor"));
-                        } else if (TLANations.some(nation => nation === rawNation) && member.roles.find(role => role.name === "Visitor")) { // Is marked Visitor but nation in TLA
-                            member.removeRole(TLAServer.roles.find(role => role.name === "Visitor"));
-                            member.addRole(TLAServer.roles.find(role => role.name === "Assemblian"));
-                        }
+                    } else if (member.roles.find(role => role.name === "Assemblian") && ! TLANations.some(nation => nation === rawNation)) { // Is marked Assemblian but not in TLA
+                        member.removeRole(TLAServer.roles.find(role => role.name === "Assemblian"));
+                        member.addRole(TLAServer.roles.find(role => role.name === "Visitor"));
+                        
+                    } else if (TLANations.some(nation => nation === rawNation) && member.roles.find(role => role.name === "Visitor")) { // Is marked Visitor but nation in TLA
+                        member.removeRole(TLAServer.roles.find(role => role.name === "Visitor"));
+                        member.addRole(TLAServer.roles.find(role => role.name === "Assemblian"));
+
+                    } else if (nations.some(nation => nation === rawNation) && member.roles.find(role => role.name === "CTE")) { // User is marked CTE but nation exists
+                        member.removeRole(TLAServer.roles.find(role => role.name === "CTE"));
+                        member.addRole(TLAServer.roles.find(role => role.name === "Verified"));
+                        member.addRole(TLAServer.roles.find(role => role.name === (TLANations.some(nation => nation === rawNation) ? "Assemblian" : "Visitor"))); // If user is in TLA add Assemblian role else add Visitor role
                     }
                 });
             });
+
             links = ["https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=6",
                      "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=27",
                      "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=28",
@@ -1215,13 +1457,14 @@ client.on('ready', () => {
                      "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=75"];
             maxTLA = []
             links.forEach(link => maxTLA.push(Number(request(link)[2]))); // Get top score of each census in TLA
-            
+
 
             numNations = Number(request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=numnations")[0]);
             place = numNations;
             do {
                 corruption = Number(request(`https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=51;start=${place}`)[2]);
-                place --
+                place --;
+                numRequests ++;
             } while (Number.isNaN(corruption)) // If some nations do not have a corruption score in the API, then corruption = NaN
 
             corruption **= -0.5
@@ -1229,6 +1472,32 @@ client.on('ready', () => {
             maxTLA[6] **= 2
 
             CICollections.updateOne({id: "CI"}, {'$set': {"maxTLA": maxTLA}});
+
+            scheduledReminders.find().toArray((err, items) => {
+                items.forEach(reminder => {
+                    const user = client.users.find(u => u.id === reminder.id);
+                    const reminderDate = new Date(reminder.time);
+                    if (reminderDate > new Date()) { // Reminder time is after current time
+                        schedule.scheduleJob(reminderDate, () => {
+                            MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
+                                const dbo = db.db(mongoUser);
+                                const collections = dbo.collection("scheduledReminders");
+                
+                                collections.findOne(reminder).then(object => {
+                                    if (object) {
+                                        receivedMessage.author.send(`Reminder: ${reminderMessage}`);
+                                        collections.deleteOne(object);
+                                    }
+                                });
+                            });
+                        });
+                    } else {
+                        user.send(`Reminder: ${reminder.message}`);
+                        scheduledReminders.deleteOne(reminder);
+                    }
+                });
+            });
+            
             console.log("Ready to take commands!");
         });
     }
@@ -1241,7 +1510,7 @@ client.on("guildMemberAdd", newMember => {
     const welcomeMessage = eval(fs.readFileSync("welcomeMessage.txt").toString()); // Add interpolation for text in welcomeMessage.txt
     newMember.user.send(welcomeMessage);
 
-    MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+    MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
         const dbo = db.db(mongoUser);
         const collections = dbo.collection("userNations");
         collections.insertOne({id: newMember.id, nation: "None", time: new Date().getTime()});
@@ -1249,10 +1518,12 @@ client.on("guildMemberAdd", newMember => {
 });
 
 client.on("guildMemberRemove", member => {
-    MongoClient.connect(mongoUrl, { useNewUrlParser: true }, function(err, db) {
+    MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
         const dbo = db.db(mongoUser);
-        const collections = dbo.collection("userNations");
-        collections.deleteOne({"id": member.id});
+        const userNations = dbo.collection("userNations");
+        const scheduledReminders = dbo.collection("scheduledReminders");
+        userNations.deleteOne({"id": member.id});
+        scheduledReminders.deleteMany({"id": member.id});
     });
 });
 
