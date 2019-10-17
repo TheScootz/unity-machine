@@ -27,7 +27,7 @@ except prawcore.exceptions.Forbidden: # Private
     sys.stdout.flush()
     sys.exit()
 
-if sub.over18:
+if sub.over18: # NSFW Subreddit
     print("Error Message: No NSFW subreddits allowed.")
     sys.stdout.flush()
     sys.exit()
@@ -57,8 +57,8 @@ submissionDict["url"] = f"https://reddit.com/{submission.id}"
 
 if submission.is_self:
     submissionDict["type"] = "Post"
-    if len(submission.selftext) > 300:
-        submissionDict["content"] = submission.selftext[:297] + "..." # Limit length of content
+    if len(submission.selftext) > 2000: # Too long
+        submissionDict["content"] = submission.selftext[:1997] + "..." # Limit length of content
     else:
         submissionDict["content"] = submission.selftext
 else:
