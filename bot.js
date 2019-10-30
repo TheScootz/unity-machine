@@ -10,7 +10,7 @@ const schedule = require('node-schedule');
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-const version = "1.5.0"; // Version
+const version = "1.5.1"; // Version
 
 let numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -1200,7 +1200,8 @@ function processCommand(receivedMessage) {
 
      // Randomly select from multiple objects
     } else if (primaryCommand === "randomselect") {
-        let objectsToSelect = arguments.match(/"(.+?)"/g);
+        let objectsToSelect = arguments.join(" ").match(/"(.+?)"/g);
+        objectsToSelect.map(object => object.slice(1, -1))
         if (objectsToSelect.length < 2) { // Nothing to select
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`)
         } 
