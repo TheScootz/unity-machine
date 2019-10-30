@@ -16,6 +16,15 @@
 `!censusnum Industry: Book Publishing`
 *Returns "The census number for Industry: Book Publishing is 24"*
 
+
+`!coinflip `
+
+**Usage:** No arguments are required.
+**Details:** The command simulates a fair coin toss and returns the result.
+**Examples:**
+`!coinflip`
+
+
 `!deverify `
 
 **Usage:** No arguments are required. If you are marked as "Unverified", this command will not work.
@@ -170,6 +179,14 @@
 `!quote marx`
 
 
+`!randomselect [Options to select]`
+**Usage:** Each option needs to be enclosed with quotes("). 
+**Details:** The command takes the given options and selects a random one, then outputs the selected one.
+**Examples:**
+`!randomselect "Bananas" "Strawberries" "Apples"`
+`!randomselect "The Pacific" "The North Pacific" "The South Pacific" "The West Pacific" "The North Pacific"`
+
+
 `!rcensus [Census ID] [Region]`
 
 **Usage:** The specified Census ID must be an integer between 0 and 85 or 255. The specified region name must have the spaces replaced with under scrolls. The region name entered is case-insensitive. If a region name is not specified, Unity Machine will find information about The Leftist Assembly. The Census IDs for each census can be found by using `!censusnum`.
@@ -205,7 +222,7 @@
 `!rcwa libertarian_socialist_confederation north_korea`
 
 
-`!remindme [Time after now] [String`
+`!remindme [Time after now] [String]`
 **Usage:** The "Time after now" argument must be in the form of `%d%h%m` where `%` denotes a number. The `%d` part is optional. The argument is case-insensitive. The string argumrnt can contain spaces.
 **Details:** This command allows a user to send a message to themself after a specified period of time. This period can be anywhere between 1 minute and 365 days. Should a user leave the server at any point, all scheduled messages will be deleted.
 **Examples:**
@@ -249,7 +266,7 @@
 **Usage:** You can find the username and tag of a Discord User by clicking on their name on the right of the Discord Client in The Leftist Assembly server.
 **Details:** The command returns the nation a given user is registered as.
 **Examples:**
-`!usernation The Comrade#4859`
+`!usernation Nott#4859`
 `!usernation Kyara#3761`
 
 
@@ -276,3 +293,25 @@
 **Examples:**
 `!wikipedia Council Communism`
 `!wikipedia Ocalan`
+
+
+`!zmostinfected `
+**Usage:** No arguments are required.
+**Details:** The command returns the 20 nations in The Leftist Assembly with the most Infected, with a link to each nation's home page.
+**Examples:**
+`!zmostinfected`
+
+
+`!zmostzombified `
+**Usage:** No arguments are required.
+**Details:** The command returns the 20 nations in The Leftist Assembly with the highest proportion of zombies, with a link to each nation's home page.
+**Examples:**
+`!zmostzombified`
+
+
+`!zstatus `
+
+**Usage:** No arguments are required.
+**Details:** The command returns the number of Survivors, Infected and Dead in The Leftist Assembly, as well as the proportion of citizens that are Survivors, Infected and Dead.
+**Examples:**
+`!zstatus`

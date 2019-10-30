@@ -10,7 +10,7 @@ const schedule = require('node-schedule');
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-const version = "1.4.1"; // Version
+const version = "1.5.0"; // Version
 
 let numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -425,8 +425,9 @@ function processCommand(receivedMessage) {
         }
         
         let dataArray = [];
-        for (i = 0, j = response.length; i < j; i += 4) {
-            temparray = response.slice(i, i + 4);
+        let j = response.length;
+        for (let i = 0; i < j; i += 4) {
+            let temparray = response.slice(i, i + 4);
             temparray.splice(2, 1); // Remove 3rd element of temparray
             temparray[0] = `policyname: ${temparray[0]}`;
             temparray[1] = `image-url: https://www.nationstates.net/images/banners/samples/${temparray[1]}.jpg`;
@@ -589,14 +590,14 @@ function processCommand(receivedMessage) {
         const today = moment().utc().startOf("day"); // UTC date, with time set to 00:00
         const year = today.year(); // This year
         holidays = holidays.map(holiday => {
-            temparray = holiday.split(": ");
+            let temparray = holiday.split(": ");
             object = {
                 name: temparray[0],
                 date: moment.utc(`${year}${temparray[1]}`)
             };
             return object;
         });
-        for (i = 0; i < holidays.length; i ++) {
+        for (let i = 0; i < holidays.length; i ++) {
             if (today.diff(holidays[i].date, 'day') > 0) {
                 holidays[i].date.add(1, "year");
             } else {
@@ -1084,7 +1085,7 @@ function processCommand(receivedMessage) {
         }
         info = info.splice(1, 3)
         if (! info[0]) info[0] = "0";
-        info = info.map(item => item = Number(item));
+        info = info.map(item => Number(item));
         if (info.every(item => item === 0)) { // 0 time
             receivedMessage.channel.send(`Error: Invalid duration. ${helpPrimaryCommand}`);
             return;
@@ -1124,6 +1125,86 @@ function processCommand(receivedMessage) {
      // Insult someone
     } else if (primaryCommand === "insult") {
         receivedMessage.channel.send(arguments.length > 0 ? `Fuck ${arguments.join(" ")}!` : "Who do you want me to insult again?");
+
+     // Get current status of Zomie Apocalypse
+    } else if (primaryCommand === "zstatus") {
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        let currentStatus = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=zombie");
+        currentStatus = currentStatus.map(item => Number(item));
+        let totalPop = currentStatus.reduce((accumulator, pop) => accumulator + pop);
+        const discordEmbed = new Discord.RichEmbed()
+            .setColor('#ce0001')
+            .setAuthor("Current Z-Day Status of TLA", NSThumbnail)
+            .addField(`Number of survivors: ${currentStatus[0]} million`, `${(currentStatus[0] / totalPop * 100).toFixed(2)}% of TLA Population`)
+            .addField(`Number of infected: ${currentStatus[1]} million`, `${(currentStatus[1] / totalPop * 100).toFixed(2)}% of TLA Population`)
+            .addField(`Number of dead: ${currentStatus[2]} million`, `${(currentStatus[2] / totalPop * 100).toFixed(2)}% of TLA Population`)
+            .setTimestamp()
+        receivedMessage.channel.send(discordEmbed);
+
+     // Get nations that have most infected
+    } else if (primaryCommand === "zmostinfected") {
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        let infectedLeaderboard = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks&scale=82");
+        let fieldHeaders = [];
+        let links = [];
+        for (let i = 0; i < 60; i += 3) {
+            let temparray = infectedLeaderboard.slice(i, i + 3);
+            fieldHeaders.push(`${temparray[1]}. ${temparray[0]} (${Number(temparray[2])} million Infected)`);
+            links.push(`[Click here to cure](https://www.nationstates.net/nation=${temparray[0]})`);
+        }
+
+        const discordEmbed = new Discord.RichEmbed()
+            .setColor('#ce0001')
+            .setAuthor("Nations with Most Infected in TLA", NSThumbnail, "https://www.nationstates.net/page=list_nations/mode=g/region=the_leftist_assembly/censusid=82")
+            .setTimestamp()
+        for (let i = 0; i < 20; i ++) {
+            discordEmbed.addField(fieldHeaders[i], links[i]);
+        }
+
+        receivedMessage.channel.send(discordEmbed);
+    
+     // Get nations that are most zombified
+    } else if (primaryCommand === "zmostzombified") {
+        if (numRequests + 1 > 50) {
+            tooManyRequests(receivedMessage);
+            return;
+        }
+        let infectedLeaderboard = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks&scale=84");
+        let fieldHeaders = [];
+        let links = [];
+        for (let i = 0; i < 60; i += 3) {
+            let temparray = infectedLeaderboard.slice(i, i + 3);
+            fieldHeaders.push(`${temparray[1]}. ${temparray[0]} (${temparray[2]}% infected)`);
+            links.push(`[Click here to cure](https://www.nationstates.net/nation=${temparray[0]})`);
+        }
+
+        const discordEmbed = new Discord.RichEmbed()
+            .setColor('#ce0001')
+            .setAuthor("Most Zombified in TLA", NSThumbnail, "https://www.nationstates.net/page=list_nations/mode=g/region=the_leftist_assembly/censusid=82")
+            .setTimestamp()
+        for (let i = 0; i < 20; i ++) {
+            discordEmbed.addField(fieldHeaders[i], links[i]);
+        }
+
+        receivedMessage.channel.send(discordEmbed);
+
+     // Simulate coin flip
+    } else if (primaryCommand === "coinflip") {
+        receivedMessage.channel.send(Math.random() < 0.5 ? `${nickname} got Heads.` : `${nickname} got Tails.`);
+
+     // Randomly select from multiple objects
+    } else if (primaryCommand === "randomselect") {
+        let objectsToSelect = arguments.match(/"(.+?)"/g);
+        if (objectsToSelect.length < 2) { // Nothing to select
+            receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`)
+        } 
+        receivedMessage.channel.send(getRandomObject(objectsToSelect));
 
      // Verify nation
     } else if (primaryCommand === "verifyme") {
@@ -1309,9 +1390,10 @@ function processCommand(receivedMessage) {
         if (arguments.length > 1) {
             receivedMessage.channel.send("Error: Too many arguments. Use `!help` to find information on all commands.");
         }
-        if (arguments.length === 0) {
-            let help = fs.readFileSync("help.md").toString()
-            receivedMessage.channel.send(help);
+        if (arguments.length === 0) { // Requesting all commands
+            let help = fs.readFileSync("help.md").toString();
+            let help2 = fs.readFileSync("help2.md").toString();
+            receivedMessage.channel.send(help).then(receivedMessage.channel.send(help2));
         } else {
             let commands = fs.readFileSync("commands.md").toString().split("\n\n\n"); // Read commands.txt, convert to string, split by triple newline
             let command = commands.find(c => c.substr(2).split(" ")[0] === arguments[0]);

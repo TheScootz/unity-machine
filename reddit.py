@@ -52,7 +52,10 @@ while any([submission.over_18 for submission in submissions]):
 submission = random.choice(submissions) # Random submission
 submissionDict = {}
 submissionDict["score"] = submission.score
-submissionDict["title"] = submission.title
+if len(submission.title) > 256: # Title too long
+    submissionDict["title"] = submission.title[:253] + "..."
+else:
+    submissionDict["title"] = submission.title
 submissionDict["url"] = f"https://reddit.com/{submission.id}"
 
 if submission.is_self:

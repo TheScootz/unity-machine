@@ -16,6 +16,11 @@ __Region info__
 `!rcwa`: Compare 2-5 regions by number of WA Nations
 `!rinfo`: Get information about a region
 
+__Z-Day Commands (Limited Time)__
+`!zmostinfected`: Get nations with most infected in TLA
+`!zmostzombified`: Get most zombified nations in TLA
+`!zstatus`: Get current Z-Day status of TLA
+
 __Other NationStates commands__
 `!censusnum`: Get Census ID of census
 `!deverify`: De-verify yourself and get marked as Unverified
@@ -25,7 +30,8 @@ __Other NationStates commands__
 `!verifyme`: Verifies a user and allows them to write and read messages
 
 __Other commands__
-`!8ball`: Get yes-no response to question
+`!8ball`: Get yes-no-maybe response to question
+`!coinflip`: Simulate fair coin toss
 `!help`: Get information about all commands or a specific command
 `!hot`: Get one of the hottest posts in a subreddit
 `!insult`: Insult something
@@ -33,10 +39,9 @@ __Other commands__
 `!ooc`: Get a random image from #out-of-context 
 `!pronoun`: Assign pronoun roles to yourself
 `!quote`: Get random quote from leftist leader
+`!randomselect`: Select a string randomly from a given list
 `!remindme`: Send reminder to yourself
 `!rip`: Pay respects to something
 `!roll`: Simulates dice roll
 `!version`: Get version of Unity Machine
-`!wikipedia`: Search on Wikipedia
-
-Created by Nottinhaps. Contact Nott#4859 or telegram Nottinhaps if you have any questions.
+`!wikipedia`: Find Wikipedia page with same title
