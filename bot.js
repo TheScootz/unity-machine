@@ -10,7 +10,7 @@ const schedule = require('node-schedule');
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-const version = "1.5.1"; // Version
+const version = "1.5.2"; // Version
 
 let numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -981,7 +981,7 @@ function processCommand(receivedMessage) {
                 let discordEmbed = new Discord.RichEmbed()
                     .setColor('#ce0001')
                     .setAuthor(`${nationName}'s total score on the Comrade Index: ${CIScore}`)
-                    .setDescription("The Comrade Index, jointly created by Nottinhaps and Llorens, uses 10 factors to create a score ranging up to 100.")
+                    .setDescription("The Comrade Index, created by Unity Statistics, uses 10 factors to create a score ranging up to 100.")
                     .setTimestamp()
                 for (let i = 0; i < 10; i ++) {
                     discordEmbed.addField(`Score in ${listOfCensuses[i]}`, CIScores[i])
@@ -1155,7 +1155,7 @@ function processCommand(receivedMessage) {
         let links = [];
         for (let i = 0; i < 60; i += 3) {
             let temparray = infectedLeaderboard.slice(i, i + 3);
-            fieldHeaders.push(`${temparray[1]}. ${temparray[0]} (${Number(temparray[2])} million Infected)`);
+            fieldHeaders.push(`${temparray[1]}. ${temparray[0]} (${Number(temparray[2]) / 1000000} million Infected)`);
             links.push(`[Click here to cure](https://www.nationstates.net/nation=${temparray[0]})`);
         }
 
