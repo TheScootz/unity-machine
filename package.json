@@ -1,6 +1,6 @@
 {
   "name": "unity-machine",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "The official Discord bot for The Leftist Assembly Discord Server",
   "main": "bot.js",
   "engines": {

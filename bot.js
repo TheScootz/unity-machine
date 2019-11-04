@@ -10,7 +10,7 @@ const schedule = require('node-schedule');
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-const version = "1.5.2"; // Version
+const version = "1.5.3"; // Version
 
 let numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -1126,74 +1126,6 @@ function processCommand(receivedMessage) {
     } else if (primaryCommand === "insult") {
         receivedMessage.channel.send(arguments.length > 0 ? `Fuck ${arguments.join(" ")}!` : "Who do you want me to insult again?");
 
-     // Get current status of Zomie Apocalypse
-    } else if (primaryCommand === "zstatus") {
-        if (numRequests + 1 > 50) {
-            tooManyRequests(receivedMessage);
-            return;
-        }
-        let currentStatus = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=zombie");
-        currentStatus = currentStatus.map(item => Number(item));
-        let totalPop = currentStatus.reduce((accumulator, pop) => accumulator + pop);
-        const discordEmbed = new Discord.RichEmbed()
-            .setColor('#ce0001')
-            .setAuthor("Current Z-Day Status of TLA", NSThumbnail)
-            .addField(`Number of survivors: ${currentStatus[0]} million`, `${(currentStatus[0] / totalPop * 100).toFixed(2)}% of TLA Population`)
-            .addField(`Number of infected: ${currentStatus[1]} million`, `${(currentStatus[1] / totalPop * 100).toFixed(2)}% of TLA Population`)
-            .addField(`Number of dead: ${currentStatus[2]} million`, `${(currentStatus[2] / totalPop * 100).toFixed(2)}% of TLA Population`)
-            .setTimestamp()
-        receivedMessage.channel.send(discordEmbed);
-
-     // Get nations that have most infected
-    } else if (primaryCommand === "zmostinfected") {
-        if (numRequests + 1 > 50) {
-            tooManyRequests(receivedMessage);
-            return;
-        }
-        let infectedLeaderboard = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks&scale=82");
-        let fieldHeaders = [];
-        let links = [];
-        for (let i = 0; i < 60; i += 3) {
-            let temparray = infectedLeaderboard.slice(i, i + 3);
-            fieldHeaders.push(`${temparray[1]}. ${temparray[0]} (${Number(temparray[2]) / 1000000} million Infected)`);
-            links.push(`[Click here to cure](https://www.nationstates.net/nation=${temparray[0]})`);
-        }
-
-        const discordEmbed = new Discord.RichEmbed()
-            .setColor('#ce0001')
-            .setAuthor("Nations with Most Infected in TLA", NSThumbnail, "https://www.nationstates.net/page=list_nations/mode=g/region=the_leftist_assembly/censusid=82")
-            .setTimestamp()
-        for (let i = 0; i < 20; i ++) {
-            discordEmbed.addField(fieldHeaders[i], links[i]);
-        }
-
-        receivedMessage.channel.send(discordEmbed);
-    
-     // Get nations that are most zombified
-    } else if (primaryCommand === "zmostzombified") {
-        if (numRequests + 1 > 50) {
-            tooManyRequests(receivedMessage);
-            return;
-        }
-        let infectedLeaderboard = request("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks&scale=84");
-        let fieldHeaders = [];
-        let links = [];
-        for (let i = 0; i < 60; i += 3) {
-            let temparray = infectedLeaderboard.slice(i, i + 3);
-            fieldHeaders.push(`${temparray[1]}. ${temparray[0]} (${temparray[2]}% infected)`);
-            links.push(`[Click here to cure](https://www.nationstates.net/nation=${temparray[0]})`);
-        }
-
-        const discordEmbed = new Discord.RichEmbed()
-            .setColor('#ce0001')
-            .setAuthor("Most Zombified in TLA", NSThumbnail, "https://www.nationstates.net/page=list_nations/mode=g/region=the_leftist_assembly/censusid=82")
-            .setTimestamp()
-        for (let i = 0; i < 20; i ++) {
-            discordEmbed.addField(fieldHeaders[i], links[i]);
-        }
-
-        receivedMessage.channel.send(discordEmbed);
-
      // Simulate coin flip
     } else if (primaryCommand === "coinflip") {
         receivedMessage.channel.send(Math.random() < 0.5 ? `${nickname} got Heads.` : `${nickname} got Tails.`);
@@ -1201,7 +1133,7 @@ function processCommand(receivedMessage) {
      // Randomly select from multiple objects
     } else if (primaryCommand === "randomselect") {
         let objectsToSelect = arguments.join(" ").match(/"(.+?)"/g);
-        objectsToSelect.map(object => object.slice(1, -1))
+        objectsToSelect = objectsToSelect.map(object => object.slice(1, -1))
         if (objectsToSelect.length < 2) { // Nothing to select
             receivedMessage.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`)
         } 
@@ -1393,8 +1325,7 @@ function processCommand(receivedMessage) {
         }
         if (arguments.length === 0) { // Requesting all commands
             let help = fs.readFileSync("help.md").toString();
-            let help2 = fs.readFileSync("help2.md").toString();
-            receivedMessage.channel.send(help).then(receivedMessage.channel.send(help2));
+            receivedMessage.channel.send(help);
         } else {
             let commands = fs.readFileSync("commands.md").toString().split("\n\n\n"); // Read commands.txt, convert to string, split by triple newline
             let command = commands.find(c => c.substr(2).split(" ")[0] === arguments[0]);

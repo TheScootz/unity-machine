@@ -293,25 +293,3 @@
 **Examples:**
 `!wikipedia Council Communism`
 `!wikipedia Ocalan`
-
-
-`!zmostinfected `
-**Usage:** No arguments are required.
-**Details:** The command returns the 20 nations in The Leftist Assembly with the most Infected, with a link to each nation's home page.
-**Examples:**
-`!zmostinfected`
-
-
-`!zmostzombified `
-**Usage:** No arguments are required.
-**Details:** The command returns the 20 nations in The Leftist Assembly with the highest proportion of zombies, with a link to each nation's home page.
-**Examples:**
-`!zmostzombified`
-
-
-`!zstatus `
-
-**Usage:** No arguments are required.
-**Details:** The command returns the number of Survivors, Infected and Dead in The Leftist Assembly, as well as the proportion of citizens that are Survivors, Infected and Dead.
-**Examples:**
-`!zstatus`

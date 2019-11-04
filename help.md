@@ -16,11 +16,6 @@ __Region info__
 `!rcwa`: Compare 2-5 regions by number of WA Nations
 `!rinfo`: Get information about a region
 
-__Z-Day Commands (Limited Time)__
-`!zmostinfected`: Get nations with most infected in TLA
-`!zmostzombified`: Get most zombified nations in TLA
-`!zstatus`: Get current Z-Day status of TLA
-
 __Other NationStates commands__
 `!censusnum`: Get Census ID of census
 `!deverify`: De-verify yourself and get marked as Unverified
@@ -45,3 +40,5 @@ __Other commands__
 `!roll`: Simulates dice roll
 `!version`: Get version of Unity Machine
 `!wikipedia`: Find Wikipedia page with same title
+
+Created by Nottinhaps. Contact Nott#4859 or telegram Nottinhaps if you have any questions.
