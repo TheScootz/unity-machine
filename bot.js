@@ -774,9 +774,9 @@ function processCommand(receivedMessage) {
             if (submissionInfo.type === "Image") {
                 discordEmbed.setImage(submissionInfo.content);
             } else if (submissionInfo.type === "Link") {
-                discordEmbed.setDescription(`[Link](${submissionInfo.content})`)
+                discordEmbed.setDescription(`[Link](${submissionInfo.content})`);
             } else if (submissionInfo.type === "Post") {
-                discordEmbed.setDescription(submissionInfo.content)
+                discordEmbed.setDescription(he.decode(submissionInfo.content));
             }
             receivedMessage.channel.send(discordEmbed);
                 
@@ -953,7 +953,7 @@ function processCommand(receivedMessage) {
             tooManyRequests(receivedMessage);
             return;
         }
-        numRequests += 1;
+        numRequests ++;
 
         let nationScores = request(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${arguments[0]};q=name+census;scale=6+27+28+29+51+57+68+71+73+75;mode=score`);
         if (typeof(nationScores) === 'number') {
@@ -1208,7 +1208,7 @@ function processCommand(receivedMessage) {
 
         const foyer = client.channels.find(channel => channel.name === "foyer");
         foyer.send(`@here Welcome ${receivedMessage.author.toString()} to The Leftist Assembly Discord Server!`);
-        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at ${TLAServer.channels.find(channel => channel.name === 'server-rules').toString()}.`)
+        foyer.send(`${receivedMessage.author.toString()}, please remember to check out our server rules at ${TLAServer.channels.find(channel => channel.name === 'server-rules').toString()} and add pronouns using \`!pronoun\`.`)
 
      // Get registered nation of user
     } else if (primaryCommand === "usernation") {
@@ -1238,7 +1238,7 @@ function processCommand(receivedMessage) {
             Visitor: 0
         };
         const pronounRoles = TLAServer.roles.filter(role => role.hexColor === "#dddddd");
-        pronounRoles.forEach(role => rolesCount[role.name] = 0);
+        pronounRoles.forEach(role => rolesCount[role.name] = -1);
         TLAServer.members.forEach(member => {
             for (var role in rolesCount) {
                 if (member.roles.find(r => r.name === role)) { // User has role
@@ -1267,9 +1267,9 @@ function processCommand(receivedMessage) {
                 }
                 items = items.map(item => client.users.find(u => u.id === item.id).tag); // Convert IDs to Tags
                 if (items.length === 1) {
-                    receivedMessage.channel.send(`${nation} is claimed by ${items[0]}`);
+                    receivedMessage.channel.send(`${nation} is claimed by ${items[0]}.`);
                 } else {
-                    receivedMessage.channel.send(`${nation} is claimed by ${items.splice(0, -1)} and ${items[-1]}`);
+                    receivedMessage.channel.send(`${nation} is claimed by ${items.splice(0, items.length - 1)} and ${items[items.length - 1]}.`);
                 }
             });
         });
