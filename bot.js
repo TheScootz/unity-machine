@@ -10,7 +10,7 @@ const schedule = require('node-schedule');
 const striptags = require('striptags');
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-const version = "1.5.3"; // Version
+const version = "1.5.5"; // Version
 
 let numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -23,6 +23,10 @@ function tooManyRequests(message) {
 
 const mongoUrl = process.env.MONGODB_URI;
 const mongoUser = process.env.MONGODB_USER;
+
+// Used to sign into PRAW
+const redditClientID = process.env.REDDIT_APP_ID;
+const redditClientSecret = process.env.REDDIT_APP_SECRET;
 
 const client = new Discord.Client()
 
@@ -744,7 +748,7 @@ function processCommand(receivedMessage) {
             return;
         }
 
-        const pythonProcess = childProcess.spawn('python3',["reddit.py", arguments[0], arguments[1], arguments[2]]);
+        const pythonProcess = childProcess.spawn('python3',["reddit.py", arguments[0], arguments[1], arguments[2], redditClientID, redditClientSecret]);
         pythonProcess.stdout.on('data', (data) => { // Received data from reddit.py
             data = data.toString();
             if (data.startsWith("Error Message:")) { // Is error message

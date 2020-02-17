@@ -1,5 +1,5 @@
 import praw, sys, random, json, prawcore
-reddit = praw.Reddit(user_agent="Script", client_id="OXxg6ARtXWPgzA", client_secret="hzJnxFZxbu6FGlz23I7NeNwY-2s")
+reddit = praw.Reddit(user_agent="Unity Machine", client_id=sys.argv[4], client_secret=sys.argv[5])
 subName = sys.argv[1]
 posts = int(sys.argv[2])
 sticky = json.loads(sys.argv[3].lower())
