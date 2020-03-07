@@ -17,7 +17,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.0.0"; // Version
+const version = "2.0.1"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -57,8 +57,8 @@ musicQueue = [] // Queue for playing music
 dispatcher = null; // Transmits voice packets from stream
 
 // Used to sign into PRAW
-const redditClientID = process.env.REDDIT_APP_ID;
-const redditClientSecret = process.env.REDDIT_APP_SECRET;
+redditClientID = process.env.REDDIT_APP_ID;
+redditClientSecret = process.env.REDDIT_APP_SECRET;
 
 client = new Discord.Client();
 
@@ -161,7 +161,7 @@ let censusDescriptions = openFile("censusDescriptions.txt");
 trophies[255] = "mostnations"; // Census no. 255 is Number of Nations
 censusNames[255] = "Number of Nations";
 censusDescriptions[255] = "The World Census tracked the movements of military-grade geo-airlifting helicopters to determine which regions have the most nations.";
-NSFavicon = "https://theredand.black/uploads/monthly_2017_03/nationstates.png.e8aa5b8de1bd5430dc950d0b297952ab.png";
+NSFavicon = "http://nationstates.net/favicon.ico";
 
 // Reply to user
 client.on('message', async msg => {

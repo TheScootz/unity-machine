@@ -7,9 +7,9 @@ module.exports = {
 \`!8ball\`
 \`!8ball Am I lucky today?\``,
 	
-	execute(msg, args) {
-		let eightBallResponses = openFile("8ball.txt");
-		let randomResponse = getRandomObject(eightBallResponses);
+	async execute(msg, args) {
+		const eightBallResponses = await openFile("8ball.txt");
+		const randomResponse = getRandomObject(eightBallResponses);
 		msg.channel.send(`\u{1f3b1} ${randomResponse}, ${nickname}.`);
 	}
 }

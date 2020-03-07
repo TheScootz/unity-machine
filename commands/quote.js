@@ -19,5 +19,6 @@ module.exports = {
 				return;
 			}
 		}
+		msg.channel.send(getRandomObject(quotes));
 	}
 }

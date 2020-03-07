@@ -23,7 +23,6 @@ module.exports = {
 		const WALink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members";
 
 		const WAResponse = (await getRequest(WALink))[0].split(','); // All WA nations
-		WAResponse = WAResponse[0].split(',');
 
 		if (! WAResponse.includes(nation.replace(/ /g, '_').toLowerCase())) { // Nation not in WA
 			msg.channel.send(`${nation} is not in the World Assembly.`);
