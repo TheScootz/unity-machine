@@ -84,3 +84,4 @@ The following nations have the greatest number of zombified citizens.
 The following nations have the greatest number of dead citizens.
 The following nations have the highest fraction of zombies among the animate.
 The World Census calculated the average incomes of citizens after paying tax.
+Some nations attempt to collect signature artworks of other nations, developing collections known as “decks.” The World Census has estimated their value. 

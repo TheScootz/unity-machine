@@ -1,35 +1,52 @@
 Use `!help [command]` to find more specific info on a given command.
 
+__Verification commands__
+`!deverify`: De-verify yourself and get marked as Unverified
+`!nationclaims`: Get the user(s) that claim a particular nation
+`!usernation`: Get the nation a user is registered with
+`!verifyme`: Verifies a user and allows them to write and read messages
+
 __Nation info__
 `!nanniversary`: Get the number of days until a nation's next anniversary
 `!ncensus`: Get performance of a nation in a census
 `!nci`: Get the Comrade Index of a nation
 `!ncompare`: Compare 2-5 nations in a census
 `!ncompareci`: Compare 2-5 nations in the Comrade Index
+`!ne`: Get nations endorsing given WA Nation
 `!ninfo`: Get information about a nation
+`!nne`: Get nations not endorsing given WA Nation
 `!npolicy`: Get information about a nation's policies
 
 __Region info__
 `!rcensus`: Get performance of a region in a census
 `!rcompare`: Compare 2-5 regions in a census
-`!rcpower`: Compare 2-5 regions by power
 `!rcwa`: Compare 2-5 regions by number of WA Nations
 `!rinfo`: Get information about a region
+`!rwavoteinfo`: Get voting records of region
 
 __Other NationStates commands__
 `!censusnum`: Get Census ID of census
-`!deverify`: De-verify yourself and get marked as Unverified
-`!nationclaims`: Get the user(s) that claim a particular nation
 `!nextholiday`: Get number of days until next holiday
-`!usernation`: Get the nation a user is registered with
-`!verifyme`: Verifies a user and allows them to write and read messages
+`!wainfo`: Get information about the World Assembly
+
+__Music Commands__
+`!pause`: Pause current song
+`!play`: Put song in music queue
+`!queue`: See songs that are queued
+`!resume`: Continue playing song
+`!skip`: Skip current song and play next song in queue
 
 __Other commands__
 `!8ball`: Get yes-no-maybe response to question
+`!cat`: Get random cat picture
 `!coinflip`: Simulate fair coin toss
+`!dog`: Get random dog picture
 `!help`: Get information about all commands or a specific command
 `!hot`: Get one of the hottest posts in a subreddit
 `!insult`: Insult something
+`!joinroleplay`: Gives roleplay role
+`!leaveroleplay`: Removes roleplay role
+`!listpronouns`: List all available pronouns
 `!membercount`: Get the number of members in the server
 `!ooc`: Get a random image from #out-of-context 
 `!pronoun`: Assign pronoun roles to yourself
@@ -37,6 +54,7 @@ __Other commands__
 `!randomselect`: Select a string randomly from a given list
 `!remindme`: Send reminder to yourself
 `!rip`: Pay respects to something
+`!rps`: Play rock-paper-scissors with Unity Machine
 `!roll`: Simulates dice roll
 `!version`: Get version of Unity Machine
 `!wikipedia`: Find Wikipedia page with same title
