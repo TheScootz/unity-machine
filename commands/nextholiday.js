@@ -7,8 +7,8 @@ module.exports = {
 **Examples:**
 \`!nextholiday\``,
 	
-	execute(msg, args) {
-		let holidays = openFile("holidays.txt");
+	async execute(msg, args) {
+		let holidays = await openFile("holidays.txt");
 		const today = moment().utc().startOf("day"); // UTC date, with time set to 00:00
 		const year = today.year(); // This year
 		holidays = holidays.map(holiday => {

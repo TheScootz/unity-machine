@@ -17,7 +17,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.0.1"; // Version
+const version = "2.0.2"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -154,14 +154,20 @@ openFile = async filename => {
 	return fileContent;
 }
 
-let trophies = openFile("trophies.txt");
-let censusNames = openFile("censusNames.txt");
-let censusDescriptions = openFile("censusDescriptions.txt");
+(async () => {
+	trophies = await openFile("trophies.txt");
+	trophies[255] = "mostnations"; // Census no. 255 is Number of Nations
+})();
+(async () => {
+	censusNames = await openFile("censusNames.txt");
+	censusNames[255] = "Number of Nations";
+})();
+(async () => {
+	censusDescriptions = await openFile("censusDescriptions.txt");
+	censusDescriptions[255] = "The World Census tracked the movements of military-grade geo-airlifting helicopters to determine which regions have the most nations.";
+})();
 
-trophies[255] = "mostnations"; // Census no. 255 is Number of Nations
-censusNames[255] = "Number of Nations";
-censusDescriptions[255] = "The World Census tracked the movements of military-grade geo-airlifting helicopters to determine which regions have the most nations.";
-NSFavicon = "http://nationstates.net/favicon.ico";
+NSFavicon = "https://nationstates.net/favicon.ico";
 
 // Reply to user
 client.on('message', async msg => {

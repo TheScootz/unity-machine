@@ -1,6 +1,6 @@
 module.exports = {
 	name: "pronoun",
-	description: `\`!pronoun [Pronouns]\`
+	help: `\`!pronoun [Pronouns]\`
 
 **Usage:** The available pronouns can be found by looking at all tags that Unity Machine has been assigned. Pronouns are seperated by a space.
 **Details:** The command removes all pronoun roles you already have, and assigns you the specified pronoun(s).

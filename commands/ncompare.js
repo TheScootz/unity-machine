@@ -10,7 +10,7 @@ module.exports = {
 	
 	async execute(msg, args) {
 		if (args.length < 3) {
-			msg.channel.send(`Error: At least 3 args are required with the !ncompare command. ${helpPrimaryCommand}`);
+			msg.channel.send(`Error: At least 3 arguments are required with the !ncompare command. ${helpPrimaryCommand}`);
 			return;
 		}
 		if (args.length > 6) {
@@ -35,7 +35,7 @@ module.exports = {
 		let nationName;
 		let score;
 		for (let i = 0; i < nations.length; i ++) {
-			const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=${censusID};mode=score`;
+			const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nations[i]};q=name+census;scale=${censusID};mode=score`;
 			try {
 				var response = await getRequest(link)
 			} catch (err) {

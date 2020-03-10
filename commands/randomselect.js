@@ -1,6 +1,6 @@
 module.exports = {
 	name: "randomselect",
-	description: `\`!randomselect [Options to select]\`
+	help: `\`!randomselect [Options to select]\`
 **Usage:** The options must be in CSV format. The options cannot contain any commas. 
 **Details:** The command takes the given options and selects a random one, then outputs the selected one.
 **Examples:**

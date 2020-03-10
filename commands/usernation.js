@@ -1,6 +1,6 @@
 module.exports = {
 	name: "usernation",
-	description: `\`!usernation [Username and Tag]\`
+	help: `\`!usernation [Username and Tag]\`
 
 **Usage:** You can find the username and tag of a Discord User by clicking on their name on the right of the Discord Client in The Leftist Assembly server.
 **Details:** The command returns the nation a given user is registered as.
