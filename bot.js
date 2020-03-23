@@ -17,7 +17,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.0.2"; // Version
+const version = "2.0.3"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -211,10 +211,6 @@ client.on('ready', async () => {
 	console.log("Connected as " + client.user.tag);  // Confirm connection
 	client.user.setActivity("Type !help to get all commands");
 
-	// Join voice channel
-	voiceChannel = client.channels.cache.find(channel => channel.type === "voice" && channel.name === "talaos-gremlin-station");
-	voiceConnection = await voiceChannel.join();
-	
 
 	TLAServer = client.guilds.cache.array()[0];
 	unverifiedRole = TLAServer.roles.cache.find(role => role.name === 'Unverified');

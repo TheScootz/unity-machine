@@ -16,8 +16,7 @@ module.exports = {
 			guildMember.roles.add(roleplayRole);
 			msg.channel.send("Added Roleplay Role!");
 		} else { // Sender has Roleplay role
-			guildMember.roles.remove(roleplayRole);
-			msg.channel.send("Removed Roleplay Role!");
+			msg.channel.send("You already have have the roleplay role!");
 		}
 	}
 }

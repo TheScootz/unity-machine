@@ -9,7 +9,11 @@ module.exports = {
 \`!play https://www.youtube.com/watch?v=w0AOGeqOnFY\``,
 	async execute(msg, args) {
 		// Play music and music queued after
-		async function playAndQueue(stream) {
+		async function playAndQueue(stream) {	
+			// Join voice channel
+			voiceChannel = client.channels.cache.find(channel => channel.type === "voice" && channel.name === "talaos-gremlin-station");
+			voiceConnection = await voiceChannel.join();
+
 			dispatcher = await voiceConnection.play(stream, {volume: 0.3}); // Decrease volume to prevent clipping
 
 			// When music stops
@@ -19,16 +23,16 @@ module.exports = {
 					const stream = ytdl(nextVideoLink, {filter: 'audioonly'});
 	
 					playAndQueue(stream);
-					dispatcherInfo = await ytdl.getInfo(nextVideoLink);
+					streamInfo = await ytdl.getInfo(nextVideoLink);
 					musicQueue.shift();
 				} else { // No music to play
 					dispatcher = null;
-					dispatcherInfo = null;
+					streamInfo = null;
+					voiceChannel.leave();
 				}
 			});
 
 			dispatcher.on("error", console.log);
-			dispatcher.on("debug", console.log);
 		
 		}
 
@@ -61,7 +65,7 @@ module.exports = {
 			msg.channel.send(`**${videoInfo.title}** has been added into the queue!`);
 		} else {
 			playAndQueue(stream);
-			dispatcherInfo = videoInfo;
+			streamInfo = videoInfo;
 			msg.channel.send(`Currently playing **${videoInfo.title}**!`);
 		}
 	}

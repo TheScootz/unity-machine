@@ -18,7 +18,7 @@ module.exports = {
 			} else {
 				msg.channel.send("Successfully skipped music!");
 			}
-			dispatcher.destroy();
+			dispatcher.end();
 		}
 	}
 }

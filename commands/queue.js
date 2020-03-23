@@ -19,7 +19,7 @@ module.exports = {
 			msg.channel.send("No music is currently being played! Use `!play` to play music.");
 			return;
 		}
-		let message = `Currently playing **${dispatcherInfo.title}** - ${hhmmssFormat(Number(dispatcherInfo.length_seconds))}`; // Message to send
+		let message = `Currently playing **${streamInfo.title}** - ${hhmmssFormat(Number(streamInfo.length_seconds))}`; // Message to send
 		if (musicQueue[0]) { // Still have music to play
 			message += "\n\nNext up:"
 			for (let i = 0; i < musicQueue.length; i ++) {
