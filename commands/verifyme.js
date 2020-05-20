@@ -2,7 +2,7 @@ module.exports = {
 	name: "verifyme",
 	help: `\`!verifyme [Nation] [Token]\`
 
-**Usage:** The specified nation name must have the spaces replaced with underscores.
+**Usage:** The specified nation name must have the spaces replaced with underscores. The token can be found here: https://www.nationstates.net/page=verify_login
 **Details:** The command verifies that a Discord User owns a nation, and allows them to read and send messages. If the nation is in The Leftist Assembly, they will be given the Assemblian role. Otherwise, they will be given the Visitor role. If you are marked as "Verified", this command will not work.
 **Examples:**
 \`!verifyme nottinhaps XsOIoNxQWtAlZfIeRgx8obMgJWwOA6znSDmA9xJQKBA\``,
@@ -69,7 +69,7 @@ module.exports = {
 		msg.channel.send(`Verification as ${responseObject.nation} successful! You should now be able to access The Leftist Assembly server.`);
 
 		const foyer = client.channels.cache.find(channel => channel.name === "foyer");
-		foyer.send(`@here Welcome ${msg.author.toString()} to The Leftist Assembly Discord Server!`);
-		foyer.send(`${msg.author.toString()}, please remember to check out our server rules at ${TLAServer.channels.cache.find(channel => channel.name === 'server-rules').toString()}, add pronouns using \`!pronoun\` and find available pronouns via \`!listpronouns\`.`)
+		await foyer.send(`@here Welcome ${msg.author.toString()} to The Leftist Assembly Discord Server!`);
+		foyer.send(`${msg.author.toString()}, please remember to check out our server rules at ${TLAServer.channels.cache.find(channel => channel.name === 'server-rules').toString()}, add pronouns using \`!addpronoun\` and find available pronouns via \`!listpronouns\`.`);
 	}
 }

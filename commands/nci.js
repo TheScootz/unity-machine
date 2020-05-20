@@ -21,7 +21,7 @@ module.exports = {
 
 		const nation = args.length === 0 ? await getNation(msg) : args.join(' ');
 
-		const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=6+27+28+29+51+57+68+71+73+75;mode=score`;
+		const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=6+7+27+28+29+51+57+71+73+75;mode=score`;
 
 		try {
 			var nationScores = await getRequest(link) // Get all census scores used in the Comrade Index
@@ -33,8 +33,7 @@ module.exports = {
 		const nationName = nationScores[0];
 		nationScores.shift();
 		nationScores = nationScores.map(score => Number(score));
-		nationScores[4] **= -0.5
-		nationScores[6] **= 2
+		nationScores[5] **= -0.5
 		const item = await CICollections.findOne({'id': 'CI'});
 		let maxTLA = item.maxTLA;
 
@@ -43,7 +42,7 @@ module.exports = {
 			CIScores.push(nationScores[i] * 10 / maxTLA[i]);
 		}
 		CIScore = CIScores.reduce((accumulator, score) => accumulator + score);
-		listOfCensuses = ["Compassion", "Government Size", "Welfare", "Public Healthcare", "Corruption", "Public Transport", "Human Development Index", "Inclusiveness", "Average Income of Poor", "Public Education"] // Names of censuses used
+		listOfCensuses = ["Compassion", "Eco-Friendliness", "Government Size", "Welfare", "Public Healthcare", "Corruption", "Public Transport", "Inclusiveness", "Average Income of Poor", "Public Education"] // Names of censuses used
 		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
 			.setAuthor(`${nationName}'s total score on the Comrade Index: ${CIScore}`)

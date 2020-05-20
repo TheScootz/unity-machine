@@ -2,6 +2,7 @@ module.exports = {
 	name: "cat",
 	aliases: ["meow"],
 	help: `\`!cat\`
+
 **Aliases:** \`!meow\`
 **Usage:** No arguments are required
 **Description:** Gets a random cat photo and sends it.`,

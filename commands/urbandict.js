@@ -1,8 +1,15 @@
 module.exports = {
 	name: "urbandict",
 	aliases: ['ud', 'urbandictionary'],
+	help: `\`!urbandict [Search Term]\`
+**Usage:** The search term can contain spaces and is case-sensitive.
+**Details:** The command searches a search term on Urban Dictionary.
+**Examples:**
+\`!urbandict Discord\`
+\`!urbandict Noam Chomsky\`
+\`!urbandict Dictionary\``,
 	async execute(msg, args) {
-		if (args.length == 0) {
+		if (args.length === 0) {
 			msg.channel.send(`Error: Too few arguments. ${helpPrimaryCommand}`);
 			return;
 		}

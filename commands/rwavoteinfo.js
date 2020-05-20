@@ -104,7 +104,7 @@ module.exports = {
 		numRequests -= 2;
 		}
 
-		if (GAVoteInfo.length == 0 && SCVoteInfo.length == 0) { // No WA resolutions being voted on
+		if (GAVoteInfo.length === 0 && SCVoteInfo.length === 0) { // No WA resolutions being voted on
 			msg.channel.send("There are no resolutions at vote.");
 		}
 	}

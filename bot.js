@@ -10,6 +10,7 @@ ordinal = require('ordinal');
 moment = require('moment');
 mongo = Promise.promisifyAll(require('mongodb'));
 path = require('path');
+Papa = require('papaparse');
 schedule = require('node-schedule');
 const striptags = require('striptags');
 const xml2js = require('xml2js');
@@ -17,7 +18,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.0.3"; // Version
+const version = "2.1.0"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -94,11 +95,22 @@ getRandomObject = ary => {
 	return ary[randomIndex];
 }
 
-// Write file and send it
-writeAndSend = async (msg, filename, data) => {
-	await fs.writeFileAsync(filename, data);
-	await msg.channel.send({files: [filename]});
-	fs.unlink(filename, err => console.log(err));
+// Get certain number of messages in channel
+getMessages = async (channel, number = Infinity) => { // Number of messages to get defaults to infinity
+	let channelMessages = new Discord.Collection();
+	let lastFetch = await channel.messages.fetch({limit: 100}); // Get last 100 messages
+	channelMessages = channelMessages.concat(lastFetch);
+	
+	// There still are messages to get and need to fetch more messages
+	while (lastFetch.size === 100 && channelMessages.size < number) {
+		lastFetch = await channel.messages.fetch({limit: 100, before: lastFetch.lastKey()}); // Get next 100 messages
+		channelMessages = channelMessages.concat(lastFetch);
+	}
+
+	while (channelMessages.size > number) { // More messages than requested
+		channelMessages.delete(channelMessages.lastKey()); // Delete earliest message
+	}
+	return channelMessages;
 }
 
 // Send HTTP GET request
@@ -115,7 +127,7 @@ getRequest = (url, parseXML) => {
 		const body = await res.text(); // Message body of response
 
 		if (parseXML) { // Parse XML from body
-			const parser = new xml2js.Parser({explicitArray : false, async: true});
+			const parser = new xml2js.Parser({explicitArray: false, async: true});
 			try {
 				var content = await parser.parseStringPromise(body); // Parse XML in body
 			} catch (err) {
@@ -130,9 +142,6 @@ getRequest = (url, parseXML) => {
 	});
 }
 
-const counterID = process.env.COUNTER_ID; // ID of counter
-function updateCounter() {} // Placeholder function until Unity Machine connects to Discord
-
 // Get nation of sender
 getNation = msg => {
 	return userCollections.findOne({id: msg.author.id}).then(object => object.nation);
@@ -145,6 +154,13 @@ executePythonFile = async (pythonFile, args) => {
 		pythonProcess.stderr.on('data', data => reject(data.toString())); // If error occurred reject with error message
 		pythonProcess.stdout.on('data', data => resolve(data.toString())); // If no error resolve with returned message
 	});
+}
+
+// Write file and send it
+writeAndSend = async (msg, filename, data) => {
+	await fs.writeFileAsync(filename, data);
+	await msg.channel.send({files: [filename]});
+	fs.unlink(filename, err => {if (err) console.error(err);}); // console.error any error if any
 }
 
 // Read file and split by newline
@@ -168,6 +184,9 @@ openFile = async filename => {
 })();
 
 NSFavicon = "https://nationstates.net/favicon.ico";
+
+const counterID = process.env.COUNTER_ID; // ID of counter
+function updateCounter() {} // Placeholder function until Unity Machine connects to Discord
 
 // Reply to user
 client.on('message', async msg => {
@@ -207,9 +226,9 @@ client.on('message', async msg => {
 });
 
 // Client is connected to Discord
-client.on('ready', async () => {
+client.once('ready', async () => {
 	console.log("Connected as " + client.user.tag);  // Confirm connection
-	client.user.setActivity("Type !help to get all commands");
+	client.user.setPresence({activity: {name: "Experimental bot for testing purposes"}});
 
 
 	TLAServer = client.guilds.cache.array()[0];
@@ -239,17 +258,22 @@ client.on('ready', async () => {
 				rolesCount.Online ++;
 			}
 		});
-		message = ["\u{1f4ca}**SERVER STATS**\u{1f4ca}", ''] // Message to send
-		message.push(`Total members in server: ${TLAServer.members.cache.keyArray().length}`); // Convert TLAServer.members.cache to array of keys, then find length and append to message
+
+		const discordEmbed = new Discord.MessageEmbed()
+			.setColor('#ce0001')
+			.setAuthor("\u{1f4ca}SERVER STATS \u{1f4ca}")
+			// Convert TLAServer.members.cache to array of keys, then find length and append to message
+			.addField("Total members in server", TLAServer.members.cache.keyArray().length)
+		
 		for (var role in rolesCount) {
-			message.push(`${role}: ${rolesCount[role]}`);
+			discordEmbed.addField(role, rolesCount[role], true);
 		}
 
 		const counterMessage = await TLAServer.channels.cache.find(channel => channel.name === "member-counter").messages.fetch(counterID);
 
-		counterMessage.edit(message.join('\n'));
+		counterMessage.edit('', discordEmbed);
 	}
-	await updateCounter();
+	updateCounter();
 
 	numRequests = 11; // 11 requests will be made
 
@@ -290,7 +314,7 @@ client.on('ready', async () => {
 			member.roles.remove(TLAServer.roles.cache.find(role => role.name === 'Verified'));
 			member.roles.add(TLAServer.roles.cache.find(role => role.name === "CTE"));
 
-			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime()}});
+			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime()}, nation: "None"});
 
 		} else if (item.time !== "None") { // Unverified/CTEd
 			if (moment().diff(item.time, 'hours') >= 168) {
@@ -313,16 +337,16 @@ client.on('ready', async () => {
 	});
 
 	links = [
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=6",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=27",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=28",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=29",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=57",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=68",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=71",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=73",
-				"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=75"
-			];
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=6",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=7",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=27",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=28",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=29",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=57",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=71",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=73",
+		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=75"
+	]
 	maxTLA = []
 	// Get top score of each census in TLA
 	for (let i = 0; i < 9; i ++) {
@@ -335,6 +359,7 @@ client.on('ready', async () => {
 	}
 
 	try {
+		// Get number of nations in TLA
 		var numNations = await getRequest("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=numnations");
 	} catch (err) {	
 		console.error(`Unable to reach NationStates API. Error code: ${err}`);
@@ -355,12 +380,11 @@ client.on('ready', async () => {
 	} while (Number.isNaN(corruption)) // If some nations do not have a corruption score in the API, then corruption = NaN
 
 	corruption **= -0.5
-	maxTLA.splice(4, 0, corruption);
-	maxTLA[6] **= 2
+	maxTLA.splice(5, 0, corruption); // Insert corruption into MaxTLA[5]
 
 	CICollections.updateOne({id: "CI"}, {'$set': {"maxTLA": maxTLA}});
 
-	reminders = await scheduledReminders.find().toArrayAsync();
+	const reminders = await scheduledReminders.find().toArrayAsync();
 	reminders.forEach(reminder => {
 		const user = client.users.cache.find(u => u.id === reminder.id);
 		const reminderDate = new Date(reminder.time);
@@ -400,21 +424,21 @@ client.on("messageReactionAdd", (reaction, user) => {
 		const nickname = reaction.message.channel.type === "dm" ? user.username : TLAServer.member(user).displayName;
 		const computerMove = getRandomObject(validMoves); // Represents index of move computer made
 
-		const DiscordEmbed = new Discord.MessageEmbed();
-		DiscordEmbed
+		const discordEmbed = new Discord.MessageEmbed();
+		discordEmbed
 			.setColor('#ce0001')
 			.addField("Unity Machine", computerMove, true)
 			.addField(nickname, userMove, true)
 
 		if (userMove === computerMove) { // Both made same move
-			DiscordEmbed.setDescription("**Tie!**");
+			discordEmbed.setDescription("**Tie!**");
 		} else if (userMove === "\u{1f311}" && computerMove === "\u2702" ||
 					userMove === "\u{1f4f0}" && computerMove === "\u{1f311}" ||
 					userMove === "\u2702" && computerMove === "\u{1f4f0}") { // Win
-			DiscordEmbed.setDescription("**You Win!**");
-		} else DiscordEmbed.setDescription("**You Lost!**"); // Lose
+			discordEmbed.setDescription("**You Win!**");
+		} else discordEmbed.setDescription("**You Lost!**"); // Lose
 
-		reaction.message.edit(DiscordEmbed);
+		reaction.message.edit(discordEmbed);
 
 		rpsDeleteJobs.get(reaction.message.id).cancel(); // Cancel delete job for message
 		rpsDeleteJobs.delete(reaction.message.id);
@@ -422,16 +446,16 @@ client.on("messageReactionAdd", (reaction, user) => {
 });
 
 // A user changes nickname or changes roles
-client.on("guildMemberUpdate", member => updateCounter());
+client.on("guildMemberUpdate", updateCounter);
 
 // A user's status or activity changes
-client.on("presenceUpdate", member => updateCounter());
+client.on("presenceUpdate", updateCounter);
 
 let unverifiedRole;
 // A user joins server
 client.on("guildMemberAdd", async newMember => {
 	newMember.roles.add(unverifiedRole); // Add unverified role
-	const welcomeMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "welcomeMessage.txt"), "utf-8")); // Add interpolation for text in welcomeMessage.txt
+	const welcomeMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "welcomeMessage.txt"), "utf-8")); // eval is used to add interpolation for text in welcomeMessage.txt
 	newMember.user.send(welcomeMessage);
 	userCollections.insertOne({id: newMember.id, nation: "None", time: new Date().getTime()});
 	updateCounter();
@@ -439,8 +463,8 @@ client.on("guildMemberAdd", async newMember => {
 
 // A user leaves/is kicked/is banned from server
 client.on("guildMemberRemove", member => {
-	userCollections.deleteOne({"id": member.id});
-	scheduledReminders.deleteMany({"id": member.id});
+	userCollections.deleteOne({"id": member.id}); // Delete from userCollections
+	scheduledReminders.deleteMany({"id": member.id}); // Delete all reminders
 	updateCounter();
 });
 

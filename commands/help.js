@@ -34,8 +34,6 @@ module.exports = {
 				msg.channel.send("Error: Command does not exist. Please use `!help` to find information on all commands.");
 				return;
 			}
-
-			console.log(client.commands.get(client.commands.keyArray().find(command => command.includes(args[0]))));
 			
 			msg.channel.send(client.commands.get(client.commands.keyArray().find(command => command.includes(args[0]))).help);
 		}

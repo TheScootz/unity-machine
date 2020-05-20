@@ -67,11 +67,14 @@ module.exports = {
 		const regionWANations = regionResponse.filter(nation => WAResponse.includes(nation)); // All nations inside list of WA nations
 		responseObject.numWA = regionWANations.length; // Number of WA Nations
 
+		// Description used in Message Embed
+		const description = `${responseObject.fullName}, home to ${responseObject.population} ${responseObject.demonymPlural}, is notable for its ${responseObject.notable}. It currently resides in [${responseObject.region}](https://nationstates.net/region=${responseObject.region.replace(/ /g, '_')}).`;
+
 		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
 			.setAuthor(responseObject.fullName, NSFavicon, `https://www.nationstates.net/nation=${nation.replace(/ /g, '_')}`)
 			.setTitle(`"${responseObject.motto}"`)
-			.setDescription(`${responseObject.fullName}, home to ${responseObject.population} ${responseObject.demonymPlural}, is notable for its ${responseObject.notable}. It currently resides in [${responseObject.region}](https://nationstates.net/nation=${responseObject.region.replace(/ /g, '_')}).`)
+			.setDescription(description)
 			.setThumbnail(responseObject.flag)
 			.addField('Government Classification', responseObject.category, true)
 			.addField("Largest Industry",  responseObject.majorIndustry, true)

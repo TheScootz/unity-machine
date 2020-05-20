@@ -4,8 +4,8 @@ module.exports = {
 **Usage:** The "Time after now" argument must be a ISO 8601 Duration String. The string following the "Time after now" argument can contain spaces.
 **Details:** This command allows a user to send a message to themself after a specified period of time. This period can be anywhere between 1 minute and 365 days. Should a user leave the server at any point, all scheduled messages will be deleted.
 **Examples:**
-\`!remindme 1H30M Do homework\`
-\`!remindme 13d8h0m Create poll for elections\``,
+\`!remindme PT1H30M Do homework\`
+\`!remindme P13DT8H0M Create poll for elections\``,
 
 	async execute(msg, args) {
 		if (args.length < 2) {
@@ -42,6 +42,6 @@ module.exports = {
 			}
 		});
 
-		msg.channel.send("Your reminder request has been logged.")
+		msg.channel.send("Your reminder request has been logged.");
 	}
 }

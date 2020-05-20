@@ -15,7 +15,7 @@ module.exports = {
 		const numWANations = (await getRequest("https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=numnations"))[0];
 		const numDelegates = (await getRequest("https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=numdelegates"))[0];
 
-		let discordEmbed = new Discord.MessageEmbed()
+		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
 			.setAuthor("The World Assembly", NSFavicon, "https://www.nationstates.net/page=un")
 			.setDescription("The WA is the world's governing body. Membership is voluntary, but all member nations must abide by legislation it passes.")
@@ -32,7 +32,7 @@ module.exports = {
 
 		if (GAInfo.length > 1) { // There is a GA resolution at vote
 			const SCResolutionAuthor = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${GAInfo[6]}&q=name`);
-			discordEmbed = new Discord.MessageEmbed()
+			const discordEmbed = new Discord.MessageEmbed()
 				.setColor('#ce0001')
 				.setAuthor(GAInfo[3], NSFavicon, "https://www.nationstates.net/page=ga")
 				.setThumbnail("https://www.nationstates.net/images/ga.jpg")
@@ -53,7 +53,7 @@ module.exports = {
 		if (SCInfo.length > 1) { // There is a SC resolution at vote
 			const SCResolutionAuthor = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${SCInfo[6]}&q=name`);
 
-			discordEmbed = new Discord.MessageEmbed()
+			const discordEmbed = new Discord.MessageEmbed()
 				.setColor('#ce0001')
 				.setAuthor(SCInfo[3], NSFavicon, "https://www.nationstates.net/page=sc")
 				.setThumbnail("https://www.nationstates.net/images/sc.jpg")
@@ -68,7 +68,7 @@ module.exports = {
 			numRequests --;
 		}
 
-		if (SCInfo.length == 0 && GAInfo.length == 0) {
+		if (SCInfo.length === 0 && GAInfo.length === 0) {
 			message.edit("There are no resolutions at vote.");
 		}
 	}

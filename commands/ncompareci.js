@@ -1,6 +1,7 @@
 module.exports = {
 	name: "ncompareci",
 	help: `\`!ncompareci [Nation] [Nation 2] [Nation 3] [Nation 4] [Nation 5]\`
+
 **Usage:** The specified nation names must have the spaces replaced with underscores. The nation names entered are case-insensitive. Between 2 to 5 nations can be entered at once.
 **Details:** The command returns the nation that performs the best in the Comrade Index out of all those compared. It also ranks the nations with each other and displays their scores in the Comrade Index.
 **Examples:**
@@ -26,7 +27,7 @@ module.exports = {
 		let nationNames = [];
 		for (let i = 0; i < args.length; i ++) {
 			const nation = args[i];
-			const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=6+27+28+29+51+57+68+71+73+75;mode=score`;
+			const link = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation};q=name+census;scale=6+7+27+28+29+51+57+71+73+75;mode=score`;
 			try {
 				var nationScores = await getRequest(link)
 			} catch (err) {
@@ -37,8 +38,7 @@ module.exports = {
 			const nationName = nationScores[0];
 			nationScores.shift();
 			nationScores = nationScores.map(score => Number(score));
-			nationScores[4] **= -0.5;
-			nationScores[6] **= 2;
+			nationScores[5] **= -0.5;
 			nationInfos.push({nation: nationName, score: nationScores});
 			nationNames.push(nationName);
 		}
@@ -55,16 +55,16 @@ module.exports = {
 		nationInfos.sort((a, b) => b.score - a.score);
 			
 
-		let discordEmbed = new Discord.MessageEmbed()
+		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
 			.setAuthor(`Comparison of ${nationsString} by Comrade Index`)
 			.setTitle(`${nationInfos[0].nation} wins!`)
 			.setTimestamp()
 
-			for (let i = 0; i < nationInfos.length; i ++) {
-				discordEmbed.addField(`${i + 1}. ${nationInfos[i].nation}`, `Score: ${nationInfos[i].score}`);
-			}
+		for (let i = 0; i < nationInfos.length; i ++) {
+			discordEmbed.addField(`${i + 1}. ${nationInfos[i].nation}`, `Score: ${nationInfos[i].score}`);
+		}
 
-			msg.channel.send(discordEmbed);
+		msg.channel.send(discordEmbed);
 	}
 }

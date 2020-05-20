@@ -9,12 +9,12 @@ module.exports = {
 \`!play https://www.youtube.com/watch?v=w0AOGeqOnFY\``,
 	async execute(msg, args) {
 		// Play music and music queued after
-		async function playAndQueue(stream) {	
+		async function playAndQueue(stream) {
 			// Join voice channel
-			voiceChannel = client.channels.cache.find(channel => channel.type === "voice" && channel.name === "talaos-gremlin-station");
+			voiceChannel = client.channels.cache.find(channel => channel.type === "voice" && channel.name === "lofi-hiphop-radio");
 			voiceConnection = await voiceChannel.join();
 
-			dispatcher = await voiceConnection.play(stream, {volume: 0.3}); // Decrease volume to prevent clipping
+			dispatcher = await voiceConnection.play(stream, {volume: false});
 
 			// When music stops
 			dispatcher.on("finish", async reason => {
@@ -32,7 +32,7 @@ module.exports = {
 				}
 			});
 
-			dispatcher.on("error", console.log);
+			dispatcher.on("error", console.error);
 		
 		}
 
@@ -41,23 +41,29 @@ module.exports = {
 			return;
 		}
 
-		// Search Youtube using args
-		const youtubeSearchResult = await youtube.search.list({
-			part: 'snippet',
-			type: 'video', // We do not want channels or playlists
-			q: args.join(' '),
-			maxResults: 1 // We only need first search result
-		});
-		const youtubeVideo = youtubeSearchResult.data.items[0];
-		if (! youtubeVideo) {
-			msg.channel.send("Error: Could not find any music matching search.");
-			return;
+		const youtubeRegex = /http(s?):\/\/(www\.|m\.)?youtu(?:be\.com\/(?:watch\?v=|embed\/)|\.be\/)([\w\-\_]*)(&(amp;)?[\w\?=]*)?/;
+
+		if (youtubeRegex.test(args.join(' '))) { // Arguments entered is a link to Youtube video
+			var videoLink = args.join(' ');
+		} else {
+
+			// Search Youtube using args
+			const youtubeSearchResult = await youtube.search.list({
+				part: 'snippet',
+				type: 'video', // We do not want channels or playlists
+				q: args.join(' '),
+				maxResults: 1 // We only need first search result
+			});
+			const youtubeVideo = youtubeSearchResult.data.items[0];
+			if (! youtubeVideo) {
+				msg.channel.send("Error: Could not find any music matching search.");
+				return;
+			}
+
+			var videoLink = `https://www.youtube.com/watch?v=${youtubeVideo.id.videoId}`; // Link to video
 		}
-
-		const videoLink = `https://www.youtube.com/watch?v=${youtubeVideo.id.videoId}`; // Link to video
-
-		const stream = ytdl(videoLink, {filter: 'audioonly'});
-		const videoInfo = await ytdl.getInfo(videoLink);
+		var stream = ytdl(videoLink, {filter: 'audioonly'});
+		var videoInfo = await ytdl.getInfo(videoLink);
 
 		
 		if (dispatcher) { // Currently playing music

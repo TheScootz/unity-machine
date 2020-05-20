@@ -15,11 +15,11 @@ module.exports = {
 		const commitMessage = unityMachineInfo.commit.message.split('\n\n');
 
 		const unityMachineAvatar = "https://cdn.discordapp.com/avatars/608277858745450497/6d9e3528bd0f715686171442a703ecd0.png";
-		const DiscordEmbed = new Discord.MessageEmbed()
+		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
 			.setAuthor(commitMessage[0], unityMachineAvatar, "https://github.com/0-beep/unity-machine")
 			.setDescription(commitMessage[1])
 			.setFooter(timeSinceCommit.fromNow())
-		msg.channel.send(DiscordEmbed);
+		msg.channel.send(discordEmbed);
 	}
 }
