@@ -3,6 +3,10 @@ import matplotlib.patches as mpatches
 import json
 import sys
 import uuid
+import warnings
+
+# Ignore warnings about glyphs
+warnings.filterwarnings("ignore")
 
 # Parse JSON sent as arguments
 data = json.loads(' '.join(sys.argv[1:len(sys.argv)]))

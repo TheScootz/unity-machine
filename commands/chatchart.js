@@ -6,8 +6,7 @@ module.exports = {
 **Details:** The command creates a chart showing the proportion of the past 1000 messages each non-bot account posted.
 **Examples:**
 \`!chatchart\`
-\`!chatchart #foyer\`
-*Gives you she/her and they/them roles*`,
+\`!chatchart #foyer\``,
 	async execute(msg, args) {
 		if (args.length === 0) { // No channel specified
 			var channel = msg.channel; // Use current channel
