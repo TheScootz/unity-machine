@@ -12,10 +12,6 @@ module.exports = {
 \`!rinfo The Communist Bloc\``,
 	
 	async execute(msg, args) {
-		if (args.length > 1) {
-			msg.channel.send(`Error: Too many arguments. Please make sure you have replaced spaces with underscores. ${helpPrimaryCommand}`)
-			return;
-		}
 		if (numRequests + 3 > 50) {
 			tooManyRequests(msg);
 			return;
@@ -68,8 +64,8 @@ module.exports = {
 			}
 		}
 
-		responseObject.foundedRelative = regionResponse[4] === '0' ? "Founded in Antiquity" : regionResponse[4]; // Checks if region was founded in Antiquity
-		responseObject.foundedTime = regionResponse[5] === '0' ? '' : moment.unix(regionResponse[5]).format('Do [of] MMMM, YYYY');
+		responseObject.foundedRelative = regionResponse[4] === '0' ? "in Antiquity" : regionResponse[4]; // Checks if region was founded in Antiquity
+		responseObject.foundedTime = regionResponse[5] === '0' ? '\u200B' : moment.unix(regionResponse[5]).format('Do [of] MMMM, YYYY');
 
 		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')

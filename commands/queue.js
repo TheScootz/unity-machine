@@ -23,7 +23,7 @@ module.exports = {
 		if (musicQueue[0]) { // Still have music to play
 			message += "\n\nNext up:"
 			for (let i = 0; i < musicQueue.length; i ++) {
-				message += `\n${i + 1}. **${(await ytdl.getInfo(musicQueue[i])).title}** - ${hhmmssFormat(Number((await ytdl.getInfo(musicQueue[i])).length_seconds))}`
+				message += `\n${i + 1}. **${(await ytdl.getInfo(musicQueue[i])).title}** - ${hhmmssFormat(Number((await ytdl.getInfo(musicQueue[i])).videoInfo.length_seconds))}`
 			}
 		}
 		msg.channel.send(message);

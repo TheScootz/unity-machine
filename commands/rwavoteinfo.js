@@ -56,7 +56,7 @@ module.exports = {
 				.addField("Nations Against", GAVoteInfo[1], true)
 
 			if (delegate !== "0") {
-				discordEmbed.addField("Delegate vote", `[${delegateInfo[0]}](https://nationstates.net/nation=${delegateInfo[0]}) - ${delegateGAVoteEmoji}`);
+				discordEmbed.addField("Delegate vote", `[${delegateInfo[0]}](https://nationstates.net/nation=${delegateInfo[0].replace(/ /g, '_')}) - ${delegateGAVoteEmoji}`);
 			}
 
 			msg.channel.send(discordEmbed);
@@ -95,7 +95,7 @@ module.exports = {
 				.addField("Nations Against", SCVoteInfo[1], true)
 
 			if (delegate !== "0") {
-				discordEmbed.addField("Delegate vote", `[${delegateInfo[0]}](https://nationstates.net/nation=${delegateInfo[0]}) - ${delegateSCVoteEmoji}`);
+				discordEmbed.addField("Delegate vote", `[${delegateInfo[0]}](https://nationstates.net/nation=${delegateInfo[0].replace(/ /g, '_')}) - ${delegateSCVoteEmoji}`);
 			}
 
 			msg.channel.send(discordEmbed);

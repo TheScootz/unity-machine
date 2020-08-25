@@ -22,7 +22,7 @@ module.exports = {
 			.setThumbnail("https://www.nationstates.net/images/world_assembly.jpg")
 			.addField("Number of WA Nations", numWANations, true)
 			.addField("Number of WA Delegates", numDelegates, true)
-			.addField("Current Secretary-General", "[Caelapes](https://www.nationstates.net/nation=caelapes)")
+			.addField("Current Secretary-General", "[Kuriko](https://www.nationstates.net/nation=kuriko)")
 			.setTimestamp()
 		
 		await msg.channel.send(discordEmbed);

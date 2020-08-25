@@ -6,7 +6,6 @@ fetch = require('node-fetch');
 fs = Promise.promisifyAll(require('fs'));
 const {google} = require('googleapis');
 he = require('he');
-ordinal = require('ordinal');
 moment = require('moment');
 mongo = Promise.promisifyAll(require('mongodb'));
 path = require('path');
@@ -18,7 +17,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.1.1"; // Version
+const version = "2.2.0"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -46,6 +45,7 @@ MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}
 	scheduledReminders = dbo.collection("scheduledReminders"); // Collection for Scheduled Reminders
 	counter = dbo.collection("counter"); // Collection for counting number of Fs, good bot and bad bot
 	(async () => pronouns = (await dbo.collection("pronouns").findOne({"id": "pronouns"})).pronouns)(); // Array of all available pronouns
+	(async () => nonWAElectoralCitizens = (await dbo.collection("nonWAElectoralCitizens").findOne({"id": "nonWAElectoralCitizens"})).nonWAElectoralCitizens)(); // Array of all non-WA Electoral Citizens of TLA
 });
 
 // Initialise Google API
@@ -228,7 +228,7 @@ client.on('message', async msg => {
 // Client is connected to Discord
 client.once('ready', async () => {
 	console.log("Connected as " + client.user.tag);  // Confirm connection
-	client.user.setPresence({activity: {name: "Experimental bot for testing purposes"}});
+	client.user.setPresence({activity: {name: 'Type "!help" to get all commands'}});
 
 
 	TLAServer = client.guilds.cache.array()[0];
@@ -242,6 +242,7 @@ client.once('ready', async () => {
 			CTE: 0,
 			Assemblian: 0,
 			Visitor: 0,
+			"Electoral Citizen": 0,
 			Online: 0,
 			Offline: 0
 		};
@@ -275,7 +276,7 @@ client.once('ready', async () => {
 	}
 	updateCounter();
 
-	numRequests = 11; // 11 requests will be made
+	numRequests = 12; // 12 requests will be made
 
 	try {
 		var nations = await getRequest("https://www.nationstates.net/cgi-bin/api.cgi?q=nations") // All nations in the world
@@ -285,54 +286,94 @@ client.once('ready', async () => {
 	}
 	nations = nations[0].split(',');
 
-	TLANationsLink = "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=nations"; // All TLA nations
+	const TLANationsLink = "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=nations"; // All TLA nations
+	const WANationsLink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members"; // All WA Nations
 
 	try {
-		var TLANations = await getRequest(TLANationsLink);
+		var TLANations = await getRequest(TLANationsLink); // All TLA Nations
+	} catch (err) {
+		console.error(`Unable to reach NationStates API. Error code: ${err}`);
+		return;
+	}
+
+	try {
+		var WANations = await getRequest(WANationsLink); // All WA Nations
 	} catch (err) {
 		console.error(`Unable to reach NationStates API. Error code: ${err}`);
 		return;
 	}
 
 	TLANations = TLANations[0].split(':');
+	WANations = WANations[0].split(',');
+
+	const TLAWANations = TLANations.filter(nation => WANations.includes(nation)); // WA nations in TLA
+
+	function isInTLA(rawNation) { // Check if nation is in TLA
+		return TLANations.includes(rawNation);
+	}
+
+	function isElectoral(rawNation) { // Check if nation is an Electoral Citizen
+		if (TLAWANations.includes(rawNation)) return true; // Nation is WA Nation in TLA
+		if (nonWAElectoralCitizens.includes(rawNation)) return true; // Nation is non WA Electoral Citizen
+		return false;
+	}
+	
+	const TLARoles = TLAServer.roles.cache; // Roles in TLA
+
+	// Roles
+	const verifiedRole = TLARoles.find(role => role.name === "Verified");
+	const assemblianRole = TLARoles.find(role => role.name === "Assemblian");
+	const visitorRole = TLARoles.find(role => role.name === "Visitor");
+	const CTERole = TLARoles.find(role => role.name === "CTE");
+	const electoralCitizenRole = TLARoles.find(role => role.name === "Electoral Citizen");
 
 	TLAServer.members.cache.forEach(async member => {
 		item = await userCollections.findOne({id: member.id})
 		if (! item) return; // member is bot
+		const memberRoles = Array.from(member.roles.cache.values()); // Roles of member
 
 		const rawNation = item.nation.toLowerCase().replace(/ /g, '_');
-		if ((! nations.some(nation => nation === rawNation)) && member.roles.cache.find(role => role.name === "Verified")) { // User has CTEd but not marked as CTE yet
+		if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
 			const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
 			member.send(CTEMessage);
 	
-			if (member.roles.cache.find(role => role.name === "Assemblian")) { // User is marked as Assemblian
-				member.roles.remove(TLAServer.roles.cache.find(role => role.name === "Assemblian"));
+			if (memberRoles.includes(assemblianRole)) { // User is marked as Assemblian
+				member.roles.remove(assemblianRole);
+				if (memberRoles.includes(electoralCitizenRole)) { // User is marked as Electoral Citizen
+					member.roles.remove(electoralCitizenRole);
+				}
 			} else {
-				member.roles.remove(TLAServer.roles.cache.find(role => role.name === "Visitor"));
+				member.roles.remove(visitorRole);
 			}
 
-			member.roles.remove(TLAServer.roles.cache.find(role => role.name === 'Verified'));
-			member.roles.add(TLAServer.roles.cache.find(role => role.name === "CTE"));
+			member.roles.remove(verifiedRole);
+			member.roles.add(CTERole);
 
-			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime()}, nation: "None"});
+			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime(), nation: "None"}});
 
 		} else if (item.time !== "None") { // Unverified/CTEd
-			if (moment().diff(item.time, 'hours') >= 168) {
+			if (moment().diff(moment(Number(item.time), 'X'), 'hours') >= 168) {
 				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
 			}
 
-		} else if (member.roles.cache.find(role => role.name === "Assemblian") && ! TLANations.some(nation => nation === rawNation)) { // Is marked Assemblian but not in TLA
-			member.roles.remove(TLAServer.roles.cache.find(role => role.name === "Assemblian"));
-			member.roles.add(TLAServer.roles.cache.find(role => role.name === "Visitor"));
+		} else if (memberRoles.includes(assemblianRole) && ! isInTLA(rawNation)) { // Is marked Assemblian but not in TLA
+			member.roles.remove(assemblianRole);
+			member.roles.add(visitorRole);
 
-		} else if (TLANations.some(nation => nation === rawNation) && member.roles.cache.find(role => role.name === "Visitor")) { // Is marked Visitor but nation in TLA
-			member.roles.remove(TLAServer.roles.cache.find(role => role.name === "Visitor"));
-			member.roles.add(TLAServer.roles.cache.find(role => role.name === "Assemblian"));
+		} else if (isInTLA(rawNation) && memberRoles.includes(visitorRole)) { // Is marked Visitor but nation in TLA
+			member.roles.remove(visitorRole);
+			member.roles.add(assemblianRole);
 
-		} else if (nations.some(nation => nation === rawNation) && member.roles.cache.find(role => role.name === "CTE")) { // User is marked CTE but nation exists
-			member.roles.remove(TLAServer.roles.cache.find(role => role.name === "CTE"));
-			member.roles.add(TLAServer.roles.cache.find(role => role.name === "Verified"));
-			member.roles.add(TLAServer.roles.cache.find(role => role.name === (TLANations.some(nation => nation === rawNation) ? "Assemblian" : "Visitor"))); // If user is in TLA add Assemblian role else add Visitor role
+		} else if (nations.some(nation => nation === rawNation) && memberRoles.includes(CTERole)) { // User is marked CTE but nation exists
+			member.roles.remove(CTERole);
+			member.roles.add(verifiedRole);
+			member.roles.add(isInTLA(rawNation) ? assemblianRole : visitorRole); // If user is in TLA add Assemblian role else add Visitor role
+		}
+
+		if (isElectoral(rawNation) && ! memberRoles.includes(electoralCitizenRole)) { // User should be marked Electoral Citizen but is not 
+			member.roles.add(electoralCitizenRole);
+		} else if (! isElectoral(rawNation) && memberRoles.includes(electoralCitizenRole)) { // User is not Electoral Citizen but is marked as such
+			member.roles.remove(electoralCitizenRole);
 		}
 	});
 
@@ -393,7 +434,7 @@ client.once('ready', async () => {
 		if (reminderDate > new Date()) {
 			schedule.scheduleJob(reminderDate, async () => {
 				const object = await scheduledReminders.findOne(reminder);
-				user.send(`Reminder: ${reminderMessage}`);
+				user.send(`Reminder: ${reminder.message}`);
 				scheduledReminders.deleteOne(object);
 			});
 

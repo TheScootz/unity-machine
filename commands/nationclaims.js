@@ -9,13 +9,14 @@ module.exports = {
 
 	async execute(msg, args) {
 		const nation = args.join(' ');
-		nationClaims = await userCollections.find({"nation": nation}).toArrayAsync()
+		nationClaims = await userCollections.find({"nation": nation}).toArrayAsync();
+		nationClaims = nationClaims.map(item => client.users.cache.find(u => u.id === item.id)); // Convert IDs to User objects
+		nationClaims = nationClaims.filter(user => TLAServer.member(user).roles.cache.find(role => role.name === "Verified")); // Filter out users that are not verified
 		if (nationClaims.length === 0) { // No users claim nation
 			msg.channel.send(`No users claim ${nation}.`);
 			return;
 		}
-
-		nationClaims = nationClaims.map(item => client.users.cache.find(u => u.id === item.id).tag); // Convert IDs to Tags
+		nationClaims = nationClaims.map(user => user.tag); // Convert User objects to Tags
 		if (nationClaims.length === 1) {
 			msg.channel.send(`${nation} is claimed by **${nationClaims[0]}**.`);
 		} else {

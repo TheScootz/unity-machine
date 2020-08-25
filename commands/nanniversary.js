@@ -23,6 +23,16 @@ module.exports = {
 		}
 		numRequests ++;
 
+		function ordinal(num) {
+			last2Digits = num % 100; // Last 2 digits of num
+			if (10 <= last2Digits < 20) return `${num}th`;
+			lastDigit = num % 10; // Last digit of num
+			if (lastDigit === 1) return `${num}st`;
+			if (lastDigit === 2) return `${num}nd`;
+			if (lastDigit === 3) return `${num}rd`;
+			return `${num}th`;
+		}
+
 		const nation = args.length === 0 ? await getNation(msg) : args.join(' ');
 
 		const today = moment().utc().startOf('day');

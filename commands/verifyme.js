@@ -28,7 +28,7 @@ module.exports = {
 
 
 		const nation = args[0];
-		const link = `https://www.nationstates.net/cgi-bin/api.cgi?a=verify&nation=${nation}&checksum=${args[1]}&q=name+region`; // Return if verification is successful and region of nation
+		const link = `https://www.nationstates.net/cgi-bin/api.cgi?a=verify&nation=${nation}&checksum=${args[1]}&q=wa+name+region`; // Return if verification is successful and region of nation
 		try {
 			var response = await getRequest(link)
 		} catch (err) {
@@ -38,8 +38,9 @@ module.exports = {
 		
 		responseObject = {
 			nation: response[0],
-			region: response[1],
-			verification: response[2]
+			wa: response[1],
+			region: response[2],
+			verification: response[3]
 		};
 
 		if (responseObject.verification === "0") { // Unsuccessful verification
@@ -52,17 +53,28 @@ module.exports = {
 			msg.channel.send(`Error: You have already been verified. If you wish to change your nation name, leave and rejoin the server. ${helpPrimaryCommand}`);
 			return;
 		}
-		
-		const verifiedRole = TLAServer.roles.cache.find(role => role.name === "Verified");
-		const assemblianRole = TLAServer.roles.cache.find(role => role.name === "Assemblian");
-		const visitorRole = TLAServer.roles.cache.find(role => role.name === "Visitor");
-		const unverifiedRole = TLAServer.roles.cache.find(role => role.name === "Unverified");
-		const CTERole = TLAServer.roles.cache.find(role => role.name === "CTE");
+
+		const TLARoles = TLAServer.roles.cache;
+
+		// Roles
+		const verifiedRole = TLARoles.find(role => role.name === "Verified");
+		const assemblianRole = TLARoles.find(role => role.name === "Assemblian");
+		const visitorRole = TLARoles.find(role => role.name === "Visitor");
+		const unverifiedRole = TLARoles.find(role => role.name === "Unverified");
+		const CTERole = TLARoles.find(role => role.name === "CTE");
+		const electoralCitizenRole = TLARoles.find(role => role.name === "Electoral Citizen");
 
 		await guildMember.roles.add(verifiedRole);
 		await guildMember.roles.add(responseObject.region === "The Leftist Assembly" ? assemblianRole : visitorRole);
+		if (responseObject.region === "The Leftist Assembly" && responseObject.wa === "WA Member") {
+			await guildMember.roles.add(electoralCitizenRole);
+		}
 		await guildMember.roles.remove(guildMember.roles.cache.find(role => role.name === "Unverified") ? unverifiedRole : CTERole); // If Unverified role is found, remove it, else remove CTE role
-		await guildMember.setNickname(`${responseObject.nation} ✓`);
+		if (responseObject.nation.length > 30) { // Nation name is too long to display in full
+			await guildMember.setNickname(`${responseObject.nation.substring(0, 27)}... ✓`);
+		} else {
+			await guildMember.setNickname(`${responseObject.nation} ✓`);
+		}
 
 		userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": responseObject.nation, "time": "None"}});
 

@@ -68,11 +68,11 @@ module.exports = {
 		
 		if (dispatcher) { // Currently playing music
 			musicQueue.push(videoLink);
-			msg.channel.send(`**${videoInfo.title}** has been added into the queue!`);
+			msg.channel.send(`**${videoInfo.videoDetails.title}** has been added into the queue!`);
 		} else {
 			playAndQueue(stream);
 			streamInfo = videoInfo;
-			msg.channel.send(`Currently playing **${videoInfo.title}**!`);
+			msg.channel.send(`Currently playing **${videoInfo.videoDetails.title}**!`);
 		}
 	}
 }

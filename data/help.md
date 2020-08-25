@@ -13,6 +13,7 @@ __Nation info__
 `!ncompare`: Compare 2-5 nations in a census
 `!ncompareci`: Compare 2-5 nations in the Comrade Index
 `!ne`: Get nations endorsing given WA Nation
+`!nindustries`: Get industries of nationd
 `!ninfo`: Get information about a nation
 `!nne`: Get nations not endorsing given WA Nation
 `!npolicy`: Get information about a nation's policies
@@ -21,6 +22,7 @@ __Region info__
 `!rcensus`: Get performance of a region in a census
 `!rcompare`: Compare 2-5 regions in a census
 `!rcwa`: Compare 2-5 regions by number of WA Nations
+`!rembassies`: Get the embassies of a region
 `!rinfo`: Get information about a region
 `!rwavoteinfo`: Get voting records of region
 
@@ -38,7 +40,9 @@ __Music Commands__
 
 __Other commands__
 `!8ball`: Get yes-no-maybe response to question
+`!addpronoun`: Add Pronouns
 `!cat`: Get random cat picture
+`!chatchart`: Get a chart showing proportion of messages in a channel by different users
 `!coinflip`: Simulate fair coin toss
 `!dog`: Get random dog picture
 `!help`: Get information about all commands or a specific command
@@ -48,14 +52,15 @@ __Other commands__
 `!leaveroleplay`: Removes roleplay role
 `!listpronouns`: List all available pronouns
 `!membercount`: Get the number of members in the server
-`!ooc`: Get a random image from #out-of-context 
-`!pronoun`: Assign pronoun roles to yourself
+`!ooc`: Get a random image from #out-of-context
 `!quote`: Get random quote from leftist leader
 `!randomselect`: Select a string randomly from a given list
 `!remindme`: Send reminder to yourself
 `!rip`: Pay respects to something
+`!removepronoun`: Add Pronouns
 `!rps`: Play rock-paper-scissors with Unity Machine
 `!roll`: Simulates dice roll
+`!urbandict`: Get the Urban Dictionary definition of a word
 `!version`: Get version of Unity Machine
 `!wikipedia`: Find Wikipedia page with same title
 
