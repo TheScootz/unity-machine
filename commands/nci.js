@@ -45,12 +45,12 @@ module.exports = {
 		listOfCensuses = ["Compassion", "Eco-Friendliness", "Government Size", "Welfare", "Public Healthcare", "Corruption", "Public Transport", "Inclusiveness", "Average Income of Poor", "Public Education"] // Names of censuses used
 		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
-			.setAuthor(`${nationName}'s total score on the Comrade Index: ${CIScore}`)
+			.setAuthor(`${nationName}'s total score on the Comrade Index: ${CIScore.toFixed(4)}`) // Rounded to 4 d.p.
 			.setDescription("The Comrade Index, created by Unity Statistics, uses 10 factors to create a score ranging up to 100.")
 			.setTimestamp()
 	
 		for (let i = 0; i < 10; i ++) {
-			discordEmbed.addField(`Score in ${listOfCensuses[i]}`, CIScores[i])
+			discordEmbed.addField(`Score in ${listOfCensuses[i]}`, CIScores[i].toFixed(5));
 		}
 		msg.channel.send(discordEmbed);
 	}

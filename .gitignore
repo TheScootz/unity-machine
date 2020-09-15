@@ -144,6 +144,7 @@ lib/
 lib64/
 parts/
 sdist/
+src/
 var/
 wheels/
 pip-wheel-metadata/

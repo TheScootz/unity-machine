@@ -62,7 +62,7 @@ module.exports = {
 			.setTimestamp()
 
 		for (let i = 0; i < nationInfos.length; i ++) {
-			discordEmbed.addField(`${i + 1}. ${nationInfos[i].nation}`, `Score: ${nationInfos[i].score}`);
+			discordEmbed.addField(`${i + 1}. ${nationInfos[i].nation}`, `Score: ${(nationInfos[i].score).toFixed(4)}`);
 		}
 
 		msg.channel.send(discordEmbed);

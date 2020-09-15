@@ -6,6 +6,7 @@ fetch = require('node-fetch');
 fs = Promise.promisifyAll(require('fs'));
 const {google} = require('googleapis');
 he = require('he');
+isImage=require('is-image')
 moment = require('moment');
 mongo = Promise.promisifyAll(require('mongodb'));
 path = require('path');
@@ -17,7 +18,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.2.0"; // Version
+const version = "2.2.1"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -38,7 +39,7 @@ const mongoUser = process.env.MONGODB_USER;
 pronouns = [];
 // Initialise MongoDB
 MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}, function(err, db) {
-	if (err) console.err(`Could not connect to MongoDB: ${err}`);
+	if (err) console.error(`Could not connect to MongoDB: ${err}`);
 	dbo = db.db(mongoUser);
 	userCollections = dbo.collection("userNations"); // Collection for user-nation key-value pairs
 	CICollections = dbo.collection("comradeIndex"); // Collection for info about the Comrade Index
@@ -278,6 +279,7 @@ client.once('ready', async () => {
 
 	numRequests = 12; // 12 requests will be made
 
+	// Reassign roles and kick CTEd/Unverifieds
 	try {
 		var nations = await getRequest("https://www.nationstates.net/cgi-bin/api.cgi?q=nations") // All nations in the world
 	} catch (err) {
@@ -352,7 +354,7 @@ client.once('ready', async () => {
 			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime(), nation: "None"}});
 
 		} else if (item.time !== "None") { // Unverified/CTEd
-			if (moment().diff(moment(Number(item.time), 'X'), 'hours') >= 168) {
+			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
 				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
 			}
 
@@ -377,6 +379,7 @@ client.once('ready', async () => {
 		}
 	});
 
+	// Update statistics used for Comrade Index
 	links = [
 		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=6",
 		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=7",
@@ -444,7 +447,14 @@ client.once('ready', async () => {
 			scheduledReminders.deleteOne(reminder);
 		}
 	});
-			
+
+	// Delete text-only messages in #out-of-context
+	const oocChannel = TLAServer.channels.cache.find(channel => channel.name === "out-of-context"); // Channel for OOC posts
+	let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
+	// Filter out all mesages with one image
+	oocMessages = oocMessages.filter(message => !(message.attachments.size === 1 && isImage(message.attachments.array()[0].url)));
+	oocMessages.forEach(message => message.delete()); // Delete all messages
+	
 	console.log("Ready to take commands!");
 });
 
