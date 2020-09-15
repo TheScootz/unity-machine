@@ -18,7 +18,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.2.1"; // Version
+const version = "2.2.2"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -453,6 +453,7 @@ client.once('ready', async () => {
 	let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
 	// Filter out all mesages with one image
 	oocMessages = oocMessages.filter(message => !(message.attachments.size === 1 && isImage(message.attachments.array()[0].url)));
+	oocMessages = oocMessages.filter(message => ! message.pinned); // Filter out all pinned messages
 	oocMessages.forEach(message => message.delete()); // Delete all messages
 	
 	console.log("Ready to take commands!");
