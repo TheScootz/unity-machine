@@ -18,7 +18,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.2.2"; // Version
+const version = "2.2.3"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
