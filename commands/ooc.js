@@ -1,3 +1,5 @@
+const isImage = require("is-image");
+
 module.exports = {
 	name: "ooc",
 	help: `\`!ooc\`
@@ -10,10 +12,9 @@ module.exports = {
 	async execute(msg, args) {
 		const oocChannel = TLAServer.channels.cache.find(channel => channel.name === "out-of-context"); // Channel for OOC posts
 		let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
-		const isImageRegex = /\.(jpg|gif|png|tiff)$/; // Check if url is image
 		oocMessages = oocMessages.filter(message => message.attachments.size === 1); // Only include oocMessages with one attachment
 		oocMessages = oocMessages.map(message => message.attachments.array()[0].url); // Only include the url of a message's attachment
-		oocMessages = oocMessages.filter(messageAttachmentURL => isImageRegex.test(messageAttachmentURL)); // Only include images
+		oocMessages = oocMessages.filter(messageAttachmentURL => isImage(messageAttachmentURL)); // Only include images
 		msg.channel.send({files: [getRandomObject(oocMessages)]}); // Send random image from message url array
 	}
 }

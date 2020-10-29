@@ -6,6 +6,11 @@ __Verification commands__
 `!usernation`: Get the nation a user is registered with
 `!verifyme`: Verifies a user and allows them to write and read messages
 
+__Z-Day Commands (Limited Time)__
+`!zmostinfected`: Get nations with most infected in TLA
+`!zmostzombified`: Get most zombified nations in TLA
+`!zstatus`: Get current Z-Day status of TLA
+
 __Nation info__
 `!nanniversary`: Get the number of days until a nation's next anniversary
 `!ncensus`: Get performance of a nation in a census

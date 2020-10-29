@@ -13,10 +13,6 @@ module.exports = {
 			msg.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
 			return;
 		}
-		if (args.length > 1) {
-			msg.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
-			return;
-		}
 		if (numRequests + 1 > 50) {
 			tooManyRequests(msg);
 			return;
