@@ -76,7 +76,7 @@ module.exports = {
 			await guildMember.setNickname(`${responseObject.nation} ✓`);
 		}
 
-		userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": responseObject.nation, "time": "None"}});
+		userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": responseObject.nation, "time": null}});
 
 		msg.channel.send(`Verification as ${responseObject.nation} successful! You should now be able to access The Leftist Assembly server.`);
 

@@ -6,7 +6,7 @@ fetch = require('node-fetch');
 fs = Promise.promisifyAll(require('fs'));
 const {google} = require('googleapis');
 he = require('he');
-isImage=require('is-image')
+isImage = require('is-image');
 moment = require('moment');
 mongo = Promise.promisifyAll(require('mongodb'));
 path = require('path');
@@ -18,7 +18,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-const version = "2.2.4"; // Version
+const version = "2.2.5"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -334,6 +334,14 @@ client.once('ready', async () => {
 		if (! item) return; // member is bot
 		const memberRoles = Array.from(member.roles.cache.values()); // Roles of member
 
+		if (item.time) { // Unverified/CTEd
+			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
+				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
+			}
+			console.log(moment().diff(moment(Number(item.time)), 'hours'));
+			return;
+		}
+
 		const rawNation = item.nation.toLowerCase().replace(/ /g, '_');
 		if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
 			const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
@@ -351,12 +359,7 @@ client.once('ready', async () => {
 			member.roles.remove(verifiedRole);
 			member.roles.add(CTERole);
 
-			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime(), nation: "None"}});
-
-		} else if (item.time !== "None") { // Unverified/CTEd
-			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
-				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
-			}
+			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime(), nation: null}});
 
 		} else if (memberRoles.includes(assemblianRole) && ! isInTLA(rawNation)) { // Is marked Assemblian but not in TLA
 			member.roles.remove(assemblianRole);
@@ -509,7 +512,7 @@ client.on("guildMemberAdd", async newMember => {
 	newMember.roles.add(unverifiedRole); // Add unverified role
 	const welcomeMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "welcomeMessage.txt"), "utf-8")); // eval is used to add interpolation for text in welcomeMessage.txt
 	newMember.user.send(welcomeMessage);
-	userCollections.insertOne({id: newMember.id, nation: "None", time: new Date().getTime()});
+	userCollections.insertOne({id: newMember.id, nation: null, time: new Date().getTime()});
 	updateCounter();
 });
 

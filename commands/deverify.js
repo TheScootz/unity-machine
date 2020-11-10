@@ -22,12 +22,12 @@ module.exports = {
 
 		if (guildMember.roles.cache.find(role => role.name === "CTE")) { // User has CTEd
 			guildMember.roles.remove(guildMember.roles.cache.find(role => role.name === "CTE"));
-			userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": "None"}});
+			userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": null}});
 
 		} else { // Either the member is Assemblian or Visitor, either way they have the Verified role
 			guildMember.roles.remove(guildMember.roles.cache.find(role => role.name === "Verified"));
 
-			userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": "None", "time": new Date().getTime()}});
+			userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": null, "time": new Date().getTime()}});
 
 			if (guildMember.roles.cache.find(role => role.name === "Assemblian")) {
 				guildMember.roles.remove(guildMember.roles.cache.find(role => role.name === "Assemblian"));

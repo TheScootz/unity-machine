@@ -1,5 +1,3 @@
-const isImage = require("is-image");
-
 module.exports = {
 	name: "ooc",
 	help: `\`!ooc\`
