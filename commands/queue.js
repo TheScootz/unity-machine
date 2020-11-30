@@ -19,11 +19,11 @@ module.exports = {
 			msg.channel.send("No music is currently being played! Use `!play` to play music.");
 			return;
 		}
-		let message = `Currently playing **${streamInfo.title}** - ${hhmmssFormat(Number(streamInfo.length_seconds))}`; // Message to send
+		let message = `Currently playing **${streamInfo.videoDetails.title}** - ${hhmmssFormat(Number(streamInfo.videoDetails.lengthSeconds))}`; // Message to send
 		if (musicQueue[0]) { // Still have music to play
 			message += "\n\nNext up:"
 			for (let i = 0; i < musicQueue.length; i ++) {
-				message += `\n${i + 1}. **${(await ytdl.getInfo(musicQueue[i])).videoDetails.title}** - ${hhmmssFormat(Number((await ytdl.getInfo(musicQueue[i])).videoInfo.videoDetails.length_seconds))}`
+				message += `\n${i + 1}. **${(await ytdl.getInfo(musicQueue[i])).videoDetails.title}** - ${hhmmssFormat(Number((await ytdl.getInfo(musicQueue[i])).videoDetails.lengthSeconds))}`
 			}
 		}
 		msg.channel.send(message);
