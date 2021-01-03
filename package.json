@@ -1,6 +1,6 @@
 {
   "name": "unity-machine",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "The official Discord bot for The Leftist Assembly Discord Server",
   "main": "bot.js",
   "engines": {
@@ -20,12 +20,12 @@
     "discord.js",
     "unity-machine"
   ],
-  "author": "Nottinhaps",
+  "author": "New Arkados",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/0-beep/unity-machine/issues"
+    "url": "https://github.com/TheScootz/unity-machine/issues"
   },
-  "homepage": "https://github.com/0-beep/unity-machine#readme",
+  "homepage": "https://github.com/TheScootz/unity-machine#readme",
   "dependencies": {
     "bluebird": "^3.7.2",
     "discord.js": "^12.5.1",
