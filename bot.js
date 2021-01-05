@@ -18,7 +18,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 
-version = "N.A."; // Version
+const version = "2.2.7"; // Version
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -33,8 +33,8 @@ tooManyRequests = msg => {
 rpsDeleteJobs = new Map(); // Map containing jobs to auto-delete RPS messages
 
 MongoClient = mongo.MongoClient;
-const mongoURI = "mongodb://localhost:27017/mydb";
-const mongoUser = "unity-machine";
+const mongoURI = process.env.MONGODB_URI;
+const mongoUser = process.env.MONGODB_USER;
 
 pronouns = [];
 // Initialise MongoDB
@@ -52,15 +52,15 @@ MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}
 // Initialise Google API
 youtube = google.youtube({
 	version: 'v3',
-	auth: "AIzaSyCwjNXloB8S8N9R6sj9oczCkxTc-H7HnH4"
+	auth: process.env.YOUTUBE_AUTH
 });
 
 musicQueue = [] // Queue for playing music
 dispatcher = null; // Transmits voice packets from stream
 
 // Used to sign into PRAW
-redditClientID = "x2aREBLnAFuE9w";
-redditClientSecret = "KA7lqJgdaODdXasoFwXvqgWVdKQ4vA";
+redditClientID = process.env.REDDIT_APP_ID;
+redditClientSecret = process.env.REDDIT_APP_SECRET;
 
 client = new Discord.Client();
 
@@ -186,7 +186,7 @@ openFile = async filename => {
 
 NSFavicon = "https://nationstates.net/favicon.ico";
 
-const counterID = "786967204688166912"; // ID of counter
+const counterID = process.env.COUNTER_ID; // ID of counter
 function updateCounter() {} // Placeholder function until Unity Machine connects to Discord
 
 // Reply to user
@@ -218,14 +218,19 @@ client.on('message', async msg => {
 			msg.channel.send(`Error: \`!${primaryCommand}\` does not exist. Use \`!help\` to find all commands.`);
 			return;
 		}
-		await client.commands.get(foundCommand).execute(msg, args);
+		try {
+			await client.commands.get(foundCommand).execute(msg, args);
+		} catch (err) {
+			msg.channel.send(`An unexpected error occurred: \`${err}\``);
+		}
 	}
 });
 
 // Client is connected to Discord
 client.once('ready', async () => {
 	console.log("Connected as " + client.user.tag);  // Confirm connection
-	client.user.setPresence({activity: {name: "Experimental bot for testing purposes"}});
+	client.user.setPresence({activity: {name: 'Type "!help" to get all commands'}});
+
 
 	TLAServer = client.guilds.cache.array()[0];
 	unverifiedRole = TLAServer.roles.cache.find(role => role.name === 'Unverified');
@@ -518,6 +523,4 @@ client.on("guildMemberRemove", member => {
 	updateCounter();
 });
 
-const bot_secret_token = "Nzg0Nzc1MzEyODU2MzE3OTY0.X8uM9w.HLYueIPqlIdh9EmkfV9G5aS4SWM";
-
-client.login(bot_secret_token);
+client.login(process.env.BOT_TOKEN);
