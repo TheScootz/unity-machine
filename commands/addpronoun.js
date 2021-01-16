@@ -9,7 +9,7 @@ module.exports = {
 **Examples:**
 \`!addpronoun he/him\`
 *Gives you he/him role*
-\`!addpronoun she/her\`
+\`!addpronoun she/her they/them\`
 *Gives you she/her and they/them roles*`,
 	execute(msg, args) {
 		if (args.length === 0) {
