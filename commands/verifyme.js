@@ -24,6 +24,7 @@ module.exports = {
 			tooManyRequests(msg);
 			return;
 		}
+        console.log(msg.author + " attempted to verify: " + msg.content);
 		numRequests ++;
 
 
@@ -33,6 +34,7 @@ module.exports = {
 			var response = await getRequest(link)
 		} catch (err) {
 			msg.channel.send(err === "404 Not Found" ? `Error: Nation does not exist.` : `An unexpected error occured: \`${err}\``);
+            console.log(msg.author + " verification failed: " + err);
 			return;
 		}
 		
@@ -45,12 +47,14 @@ module.exports = {
 
 		if (responseObject.verification === "0") { // Unsuccessful verification
 			msg.channel.send("Error: Unsuccessful verification. Make sure you have not performed any in-game actions after generating the verification code, and entered your verification code and nation properly.");
-			return;
+			console.log(msg.author + " verification failed");
+            return;
 		}
 		
 		const guildMember = TLAServer.member(msg.author);
 		if (guildMember.roles.cache.find(role => role.name === "Verified")) { // Sender has "Verified" role
 			msg.channel.send(`Error: You have already been verified. If you wish to change your nation name, leave and rejoin the server. ${helpPrimaryCommand}`);
+            console.log(msg.author + " verification succeeded as " + nation);
 			return;
 		}
 
