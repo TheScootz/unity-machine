@@ -53,8 +53,6 @@ __Other commands__
 `!help`: Get information about all commands or a specific command
 `!hot`: Get one of the hottest posts in a subreddit
 `!insult`: Insult something
-`!joinroleplay`: Gives roleplay role
-`!leaveroleplay`: Removes roleplay role
 `!listpronouns`: List all available pronouns
 `!membercount`: Get the number of members in the server
 `!ooc`: Get a random image from #out-of-context
