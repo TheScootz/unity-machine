@@ -66,12 +66,12 @@ module.exports = {
 		const visitorRole = TLARoles.find(role => role.name === "Visitor");
 		const unverifiedRole = TLARoles.find(role => role.name === "Unverified");
 		const CTERole = TLARoles.find(role => role.name === "CTE");
-		const electoralCitizenRole = TLARoles.find(role => role.name === "Electoral Citizen");
+		const WACitizenRole = TLARoles.find(role => role.name === "WA Citizen");
 
 		await guildMember.roles.add(verifiedRole);
 		await guildMember.roles.add(responseObject.region === "The Leftist Assembly" ? assemblianRole : visitorRole);
 		if (responseObject.region === "The Leftist Assembly" && responseObject.wa === "WA Member") {
-			await guildMember.roles.add(electoralCitizenRole);
+			await guildMember.roles.add(WACitizenRole);
 		}
 		await guildMember.roles.remove(guildMember.roles.cache.find(role => role.name === "Unverified") ? unverifiedRole : CTERole); // If Unverified role is found, remove it, else remove CTE role
 		if (responseObject.nation.length > 30) { // Nation name is too long to display in full

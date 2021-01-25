@@ -1,6 +1,6 @@
 module.exports = {
 	name: "deverify",
-	help: `\!deverify\`
+	help: `\`!deverify\`
 
 **Usage:** No arguments are required. If you are marked as "Unverified", this command will not work.
 **Details:** The command allows you to be de-verified and be marked as Unverified, thus allowing you to verify as another nation.
