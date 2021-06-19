@@ -17,7 +17,7 @@ module.exports = {
 		const unityMachineAvatar = "https://cdn.discordapp.com/avatars/608277858745450497/d99056fe49addd31227515f50e226841.png";
 		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
-			.setAuthor(commitMessage[0], unityMachineAvatar, "https://github.com/0-beep/unity-machine")
+			.setAuthor(commitMessage[0], unityMachineAvatar, "https://github.com/TheScootz/unity-machine")
 			.setDescription(commitMessage[1])
 			.setFooter(timeSinceCommit.fromNow())
 		msg.channel.send(discordEmbed);
