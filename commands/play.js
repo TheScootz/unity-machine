@@ -46,7 +46,8 @@ module.exports = {
 		if (youtubeRegex.test(args.join(' '))) { // Arguments entered is a link to Youtube video
 			var videoLink = args.join(' ');
 		} else {
-
+            
+            console.log("SEARCHING");
 			// Search Youtube using args
 			const youtubeSearchResult = await youtube.search.list({
 				part: 'snippet',
@@ -54,6 +55,7 @@ module.exports = {
 				q: args.join(' '),
 				maxResults: 1 // We only need first search result
 			});
+            console.log("DONE SEARCHING")
 			const youtubeVideo = youtubeSearchResult.data.items[0];
 			if (! youtubeVideo) {
 				msg.channel.send("Error: Could not find any music matching search.");
@@ -62,6 +64,7 @@ module.exports = {
 
 			var videoLink = `https://www.youtube.com/watch?v=${youtubeVideo.id.videoId}`; // Link to video
 		}
+        console.log("Attemping to play video: ${videoLink}");
 		var stream = ytdl(videoLink, {filter: 'audioonly'});
 		var videoInfo = await ytdl.getInfo(videoLink);
 
