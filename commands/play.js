@@ -10,6 +10,7 @@ module.exports = {
 	async execute(msg, args) {
 		// Play music and music queued after
 		async function playAndQueue(stream) {
+            
 			// Join voice channel
 			voiceChannel = client.channels.cache.find(channel => channel.type === "voice" && channel.name === "lofi-hiphop-radio");
 			voiceConnection = await voiceChannel.join();
@@ -63,7 +64,11 @@ module.exports = {
 			var videoLink = `https://www.youtube.com/watch?v=${youtubeVideo.id.videoId}`; // Link to video
 		}
         console.log(`Attemping to play video: ${videoLink}`);
-		var stream = ytdl(videoLink, {filter: 'audioonly'});
+        try {
+            var stream = ytdl(videoLink);
+        } catch (err) {
+            console.log(`Issue initializing stream: ${err}`)
+        }
 		var videoInfo = await ytdl.getInfo(videoLink);
 
 		
