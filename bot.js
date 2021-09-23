@@ -46,7 +46,7 @@ MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}
 	scheduledReminders = dbo.collection("scheduledReminders"); // Collection for Scheduled Reminders
 	counter = dbo.collection("counter"); // Collection for counting number of Fs, good bot and bad bot
 	(async () => pronouns = (await dbo.collection("pronouns").findOne({"id": "pronouns"})).pronouns)(); // Array of all available pronouns
-	(async () => nonWAElectoralCitizens = (await dbo.collection("nonWAElectoralCitizens").findOne({"id": "nonWAElectoralCitizens"})).nonWAElectoralCitizens)(); // Array of all non-WA Electoral Citizens of TLA
+	//(async () => nonWAElectoralCitizens = (await dbo.collection("nonWAElectoralCitizens").findOne({"id": "nonWAElectoralCitizens"})).nonWAElectoralCitizens)(); // Array of all non-WA Electoral Citizens of TLA
 });
 
 // Initialise Google API
@@ -243,7 +243,7 @@ client.on('messageCreate', async msg => {
 
 	// Reply to special commands
 	if (client.specialCommands.find(command => command.name.includes(msg.content.toLowerCase()))) {
-		client.specialCommands.get(client.specialCommands.find(command => command.name.includes(msg.content.toLowerCase()))).execute(msg);
+		client.specialCommands.find(command => command.name.includes(msg.content.toLowerCase())).execute(msg);
 		return;
 	}
 
@@ -325,20 +325,17 @@ client.once('ready', async () => {
 		return TLANations.includes(rawNation);
 	}
 
-	function isElectoral(rawNation) { // Check if nation is an Electoral Citizen
+	/*function isElectoral(rawNation) { // Check if nation is an Electoral Citizen
 		if (TLAWANations.includes(rawNation)) return true; // Nation is WA Nation in TLA
 		if (nonWAElectoralCitizens.includes(rawNation)) return true; // Nation is non WA Electoral Citizen
 		return false;
-	}
-	
-	const TLARoles = TLAServer.roles.cache; // Roles in TLA
+	}*/
 
 	// Roles
-	const verifiedRole = TLARoles.find(role => role.name === "Verified");
-	const assemblianRole = TLARoles.find(role => role.name === "Assemblian");
-	const visitorRole = TLARoles.find(role => role.name === "Visitor");
-	const CTERole = TLARoles.find(role => role.name === "CTE");
-	const electoralCitizenRole = TLARoles.find(role => role.name === "WA Citizen");
+	const verifiedRole = await TLAServer.roles.fetch(IDS.roles.verified);
+	const assemblianRole = await TLAServer.roles.fetch(IDS.roles.assemblian);
+	const visitorRole = await TLAServer.roles.fetch(IDS.roles.visitor);
+	const CTERole = await TLAServer.roles.fetch(IDS.roles.CTE);
 
 	// Iterate through all members. This will add them all to the cache as well.
 	(await TLAServer.members.list({ limit: 1000 })).forEach(async member => {
@@ -355,7 +352,6 @@ client.once('ready', async () => {
 		}
 
 		const rawNation = item.nation.toLowerCase().replace(/ /g, '_');
-		console.log(rawNation)
 		if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
 			const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
 			member.send(CTEMessage);
@@ -388,11 +384,11 @@ client.once('ready', async () => {
 			member.roles.add(isInTLA(rawNation) ? assemblianRole : visitorRole); // If user is in TLA add Assemblian role else add Visitor role
 		}
 
-		if (isElectoral(rawNation) && ! memberRoles.includes(electoralCitizenRole)) { // User should be marked Electoral Citizen but is not 
+		/*if (isElectoral(rawNation) && ! memberRoles.includes(electoralCitizenRole)) { // User should be marked Electoral Citizen but is not 
 			member.roles.add(electoralCitizenRole);
 		} else if (! isElectoral(rawNation) && memberRoles.includes(electoralCitizenRole)) { // User is not Electoral Citizen but is marked as such
 			member.roles.remove(electoralCitizenRole);
-		}
+		}*/
 	});
 
 	// Update statistics used for Comrade Index

@@ -58,15 +58,13 @@ module.exports = {
 			return;
 		}
 
-		const TLARoles = TLAServer.roles.cache;
-		console.log(TLARoles);
 		// Roles
-		const verifiedRole = TLARoles.find(role => role.name === "Verified");
-		const assemblianRole = TLARoles.find(role => role.name === "Assemblian");
-		const visitorRole = TLARoles.find(role => role.name === "Visitor");
-		const unverifiedRole = TLARoles.find(role => role.name === "Unverified");
-		const CTERole = TLARoles.find(role => role.name === "CTE");
-		const WACitizenRole = TLARoles.find(role => role.name === "WA Citizen");
+		const verifiedRole = await TLAServer.roles.fetch(IDS.roles.verified);
+		const assemblianRole = await TLAServer.roles.fetch(IDS.roles.assemblian);
+		const visitorRole = await TLAServer.roles.fetch(IDS.roles.visitor);
+		const unverifiedRole = await TLAServer.roles.fetch(IDS.roles.unverified);
+		const CTERole = await TLAServer.roles.fetch(IDS.roles.CTE);
+		const WACitizenRole = await TLAServer.roles.fetch(IDS.roles.WACitizen);
 
 		await guildMember.roles.add(verifiedRole);
 		await guildMember.roles.add(responseObject.region === "The Leftist Assembly" ? assemblianRole : visitorRole);
