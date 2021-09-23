@@ -67,4 +67,4 @@ __Other commands__
 `!version`: Get version of Unity Machine
 `!wikipedia`: Find Wikipedia page with same title
 
-Created by Nottinhaps and currently managed by New Arkados. Contact Scootz#9999 or telegram New Arkados if you have any questions.
+Created by Nottinhaps and currently managed by New Arkados. Contact Scootz#5514 or telegram New Arkados if you have any questions.

@@ -27,15 +27,15 @@ module.exports = {
 					helpChunk.push(help.shift());
 				}
 				if (help[0]) help.unshift(helpChunk.pop()); // Remove last line of helpChunk and put it in first line of help (or else helpChunk has more than 2000 characters) if help exists
-				await msg.channel.send(helpChunk);
+				await msg.channel.send(helpChunk.join('\n'));
 			}
 		} else {
-			if (! client.commands.keyArray().find(command => command.includes(args[0]))) {
+			if (! client.commands.find(command => command.name.includes(args[0]))) {
 				msg.channel.send("Error: Command does not exist. Please use `!help` to find information on all commands.");
 				return;
 			}
 			
-			msg.channel.send(client.commands.get(client.commands.keyArray().find(command => command.includes(args[0]))).help);
+			msg.channel.send(client.commands.find(command => command.name.includes(args[0])).help);
 		}
 	}
 }
