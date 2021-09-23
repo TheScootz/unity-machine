@@ -8,7 +8,7 @@ module.exports = {
 \`!nne Llorens\`
 \`!nne New Arkados\``,
 	async execute(msg, args) {
-		if (args.length === 0 && ! TLAServer.member(msg.author).roles.cache.find(role => role.name === "Verified")) {
+		if (args.length === 0 && !(await TLAServer.members.fetch(msg.author)).roles.cache.find(role => role.name === "Verified")) {
 			msg.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
 			return;
 		}

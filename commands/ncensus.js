@@ -14,7 +14,7 @@ module.exports = {
 			msg.channel.send(`Error: Too many arguments. Make sure you have replaced spaces with underscores. ${helpPrimaryCommand}`);
 			return;
 		}
-		if (args.length < 1 || (args.length < 2 && ! TLAServer.member(msg.author).roles.cache.find(role => role.name === "Verified"))) {
+		if (args.length < 1 || (args.length < 2 && !(await TLAServer.members.fetch(msg.author)).roles.cache.find(role => role.name === "Verified"))) {
 			msg.channel.send(`Error: At least 2 args are required with the !ncensus command. ${helpPrimaryCommand}`);
 			return;
 		}

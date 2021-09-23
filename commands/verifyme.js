@@ -16,7 +16,7 @@ module.exports = {
 			msg.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
 			return;
 		}
-		if (msg.channel.type !== "dm") { // Only allow verification in DMs
+		if (msg.channel.type !== "DM") { // Only allow verification in DMs
 			msg.channel.send(`Error: \`!verifyme\` only works in direct messages. ${helpPrimaryCommand}`);
 			return;
 		}
@@ -51,7 +51,7 @@ module.exports = {
             return;
 		}
 		
-		const guildMember = TLAServer.member(msg.author);
+		const guildMember = await TLAServer.members.fetch(msg.author);
 		if (guildMember.roles.cache.find(role => role.name === "Verified")) { // Sender has "Verified" role
 			msg.channel.send(`Error: You have already been verified. If you wish to change your nation name, leave and rejoin the server. ${helpPrimaryCommand}`);
             console.log(msg.author + " verification succeeded as " + nation);
@@ -59,7 +59,7 @@ module.exports = {
 		}
 
 		const TLARoles = TLAServer.roles.cache;
-
+		console.log(TLARoles);
 		// Roles
 		const verifiedRole = TLARoles.find(role => role.name === "Verified");
 		const assemblianRole = TLARoles.find(role => role.name === "Assemblian");
@@ -74,11 +74,15 @@ module.exports = {
 			await guildMember.roles.add(WACitizenRole);
 		}
 		await guildMember.roles.remove(guildMember.roles.cache.find(role => role.name === "Unverified") ? unverifiedRole : CTERole); // If Unverified role is found, remove it, else remove CTE role
-		if (responseObject.nation.length > 30) { // Nation name is too long to display in full
-			await guildMember.setNickname(`${responseObject.nation.substring(0, 27)}... ✓`);
-		} else {
-			await guildMember.setNickname(`${responseObject.nation} ✓`);
-		}
+		try {
+			if (responseObject.nation.length > 30) { // Nation name is too long to display in full
+				await guildMember.setNickname(`${responseObject.nation.substring(0, 27)}... ✓`);
+			} else {
+				await guildMember.setNickname(`${responseObject.nation} ✓`);
+			}
+		} catch (err) {
+			msg.channel.send("Could not change your nickname: " + err);
+        }
 
 		userCollections.updateOne({"id": guildMember.id}, {"$set": {"nation": responseObject.nation, "time": null}});
 

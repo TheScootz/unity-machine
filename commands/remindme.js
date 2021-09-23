@@ -30,12 +30,10 @@ module.exports = {
 		}
 
 		const dueTime = new Date().getTime() + duration.asMilliseconds();
-		const item = await scheduledReminders.insertOne({"time": dueTime, "id": msg.author.id, "message": reminderMessage});
-		const result = JSON.parse(item.toString()); // Get what is returned after inserting item
-		const assignedID = new mongo.ObjectID(result.ops[0]._id); // Get _id of item
+		const item = await scheduledReminders.insertOne({ "time": dueTime, "id": msg.author.id, "message": reminderMessage });
 
 		schedule.scheduleJob(new Date(dueTime), async () => {
-			const object = await scheduledReminders.findOne({"_id": assignedID});
+			const object = await scheduledReminders.findOne({"_id": item.insertedId});
 			if (object) { // If object with _id exists
 				msg.author.send(`Reminder: ${reminderMessage}`);
 				scheduledReminders.deleteOne(object);

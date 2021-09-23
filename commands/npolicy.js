@@ -10,7 +10,7 @@ module.exports = {
 \`!npolicy ransium\``,
 	
 	async execute(msg, args) {
-		if (args.length < 1 && ! TLAServer.member(msg.author).roles.cache.find(role => role.name === "Verified")) {
+		if (args.length < 1 && !(await TLAServer.members.fetch(msg.author)).roles.cache.find(role => role.name === "Verified")) {
 			msg.channel.send(`Error: 1 argument is required with the !npolicy command. ${helpPrimaryCommand}`);
 			return;
 		}

@@ -7,13 +7,13 @@ module.exports = {
 **Examples:**
 \`!deverify\``,
 
-	execute(msg, args) {
-		if (msg.channel.type !== "dm") { // Only allow deverification in DMs
+	async execute(msg, args) {
+		if (msg.channel.type !== "DM") { // Only allow deverification in DMs
 			msg.channel.send(`Error: \`!deverify\` only works in direct messages. ${helpPrimaryCommand}`);
 			return;
 		}
 
-		const guildMember = TLAServer.member(msg.author);
+		const guildMember = await TLAServer.members.fetch(msg.author);
 		if (guildMember.roles.cache.find(role => role.name === "Unverified")) { // Only allow deverification to people that have been verified
 			msg.channel.send(`Error: You are not verified yet, so you cannot use \`!deverify\`. ${helpPrimaryCommand}`);
 			return;

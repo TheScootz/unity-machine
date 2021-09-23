@@ -37,7 +37,7 @@ module.exports = {
 		
 		}
 
-		if (msg.channel.type === "dm") { // Do not allow usage in DMs
+		if (msg.channel.type === "DM") { // Do not allow usage in DMs
 			msg.channel.send(`Error: \`!play\` does not work in direct messages. ${helpPrimaryCommand}`);
 			return;
 		}

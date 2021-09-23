@@ -21,7 +21,7 @@ module.exports = {
 			return;
 		}
 		let authors = []; // Array containing authors of each message
-		messagesInChannel.array().forEach(message => {
+		messagesInChannel.forEach(message => {
 			authors.push(message.author.tag);
 		});
 		let authorCounter = {};
@@ -35,7 +35,11 @@ module.exports = {
 
 		let jsonToSend = {"messages-by-account": authorCounter, "channel": channel.name}; // JSON to send to Python file
 		// Convert authorCounter into PNG file
-		let pngFile = await executePythonFile(path.join(__dirname, "..", "py-exec", "chatchart.py"), JSON.stringify(jsonToSend));
+		let pngFile = await executePythonFile(path.join(__dirname, "..", "py-exec", "chatchart.py"), JSON.stringify(jsonToSend))
+			.catch(error => {
+				msg.channel.send("Could not execute python: " + error);
+				return;
+			});
 		pngFile = pngFile.trim() // Remove newline at end of PNG file name
 		await msg.channel.send({files: [pngFile]});
 		fs.unlink(pngFile, err => {if (err) console.error(err);}); // console.error any error if any

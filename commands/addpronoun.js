@@ -11,14 +11,14 @@ module.exports = {
 *Gives you he/him role*
 \`!addpronoun she/her they/them\`
 *Gives you she/her and they/them roles*`,
-	execute(msg, args) {
+	async execute(msg, args) {
 		if (args.length === 0) {
 			msg.channel.send(`Error: Too little arguments. ${helpPrimaryCommand}`);
 			return;
 		}
 		const pronounRoles = TLAServer.roles.cache.filter(role => pronouns.includes(role.name)); // Valid pronouns
 
-		const guildMember = TLAServer.member(msg.author);
+		const guildMember = await TLAServer.members.fetch(msg.author);
 		const memberRoles = guildMember.roles.cache;
 		
 		args.forEach(rolename => {

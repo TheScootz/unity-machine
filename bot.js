@@ -2,7 +2,7 @@ Promise = require('bluebird');
 
 childProcess = require('child_process');
 Discord = require('discord.js');
-fetch = require('node-fetch');
+fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 fs = Promise.promisifyAll(require('fs'));
 const {google} = require('googleapis');
 he = require('he');
@@ -17,8 +17,8 @@ const xml2js = require('xml2js');
 ytdl = require('ytdl-core');
 
 const botPrefix = "!";
-
-const version = "2.2.7"; // Version
+const version = "2.3.0"; // Version
+PROD_GUILD = 256222023993393152;
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -62,7 +62,17 @@ dispatcher = null; // Transmits voice packets from stream
 redditClientID = process.env.REDDIT_APP_ID;
 redditClientSecret = process.env.REDDIT_APP_SECRET;
 
-client = new Discord.Client();
+client = new Discord.Client({
+	intents: [
+		Discord.Intents.FLAGS.GUILDS,
+		Discord.Intents.FLAGS.GUILD_MEMBERS,
+		Discord.Intents.FLAGS.GUILD_PRESENCES,
+		Discord.Intents.FLAGS.GUILD_MESSAGES,
+		Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+		Discord.Intents.FLAGS.DIRECT_MESSAGES
+	],
+	partials: ['MESSAGE', 'CHANNEL', 'REACTION']
+});
 
 // Get commands from folder
 async function getCommands(normalisedPath) {
@@ -151,7 +161,7 @@ getNation = msg => {
 // Execute Python file
 executePythonFile = async (pythonFile, args) => {
 	return new Promise((resolve, reject) => {
-		const pythonProcess = childProcess.spawn('python3', [pythonFile].concat(args)); // Run Python File with arguments
+		const pythonProcess = childProcess.spawn('python', [pythonFile].concat(args)); // Run Python File with arguments
 		pythonProcess.stderr.on('data', data => reject(data.toString())); // If error occurred reject with error message
 		pythonProcess.stdout.on('data', data => resolve(data.toString())); // If no error resolve with returned message
 	});
@@ -187,42 +197,79 @@ openFile = async filename => {
 NSFavicon = "https://nationstates.net/favicon.ico";
 
 const counterID = process.env.COUNTER_ID; // ID of counter
-function updateCounter() {} // Placeholder function until Unity Machine connects to Discord
+updateCounter = async () => {
+	let rolesCount = {
+		Verified: 0,
+		Unverified: 0,
+		CTE: 0,
+		Assemblian: 0,
+		Visitor: 0,
+		"WA Citizen": 0,
+		Online: 0,
+		Offline: 0
+	};
+	pronouns.forEach(role => rolesCount[role] = 0);
+	(await TLAServer.members.list({ limit: 1000 })).forEach(member => {
+		for (var role in rolesCount) {
+			if (member.roles.cache.find(r => r.name === role)) { // User has role
+				rolesCount[role]++;
+			}
+		}
+		if (member.presence.status === "offline") {
+			rolesCount.Offline++;
+		} else {
+			rolesCount.Online++;
+		}
+	});
+
+	const discordEmbed = new Discord.MessageEmbed()
+		.setColor('#ce0001')
+		.setAuthor("\u{1f4ca}SERVER STATS \u{1f4ca}")
+		.addField("Total members in server", TLAServer.memberCount.toString())
+
+	for (var role in rolesCount) {
+		discordEmbed.addField(role, rolesCount[role].toString(), true);
+	}
+
+	const counterMessage = await (await TLAServer.channels.fetch(IDS.channels.counter)).messages.fetch(counterID);
+
+	counterMessage.edit({ embeds: [discordEmbed] });
+}
 
 // Reply to user
-client.on('message', async msg => {
+client.on('messageCreate', async msg => {
 	// Prevent bot from responding to its own messages
 	if (msg.author === client.user) return;
 
 	// Reply to special commands
-	if (client.specialCommands.keyArray().find(command => command.includes(msg.content.toLowerCase()))) {
-		client.specialCommands.get(client.specialCommands.keyArray().find(command => command.includes(msg.content.toLowerCase()))).execute(msg);
+	if (client.specialCommands.find(command => command.name.includes(msg.content.toLowerCase()))) {
+		client.specialCommands.get(client.specialCommands.find(command => command.name.includes(msg.content.toLowerCase()))).execute(msg);
 		return;
 	}
 
 	// Received message starts with bot prefix
 	if (msg.content.startsWith(botPrefix)) {
-
 		const fullCommand = msg.content.substr(botPrefix.length); // Remove the leading bot prefix
 		const splitCommand = fullCommand.split(' '); // Split the message up in to pieces for each space
 		const primaryCommand = splitCommand[0].toLowerCase(); // The first word directly after the exclamation is the command
 		let args = splitCommand.slice(1); // All other words are args/parameters/options for the command
 	
-		nickname = msg.channel.type === 'dm' ? msg.author.username : TLAServer.member(msg.author).displayName; // Nickname of user, returns username if contacted via DM
-	
+		nickname = (msg.channel.type === 'DM' ? msg.author.username : (await TLAServer.members.fetch(msg.author)).displayName); // Nickname of user, returns username if contacted via DM
+
 		helpPrimaryCommand = `Please use \`!help ${primaryCommand}\` to show more information.`; // Directs user to use !help command in error
 		
-		let foundCommand = client.commands.keyArray().find(command => command.includes(primaryCommand)); // Key in client.commands containing primaryCommand
+		let foundCommand = client.commands.find(command => command.name.includes(primaryCommand)); // Key in client.commands containing primaryCommand
+		
 		// If command does not exist
 		if (! foundCommand) {
 			msg.channel.send(`Error: \`!${primaryCommand}\` does not exist. Use \`!help\` to find all commands.`);
 			return;
 		}
-		try {
-			await client.commands.get(foundCommand).execute(msg, args);
-		} catch (err) {
+		//try {
+			await foundCommand.execute(msg, args);
+		/*} catch (err) {
 			msg.channel.send(`An unexpected error occurred: \`${err}\``);
-		}
+		}*/
 	}
 });
 
@@ -232,49 +279,13 @@ client.once('ready', async () => {
 	client.user.setPresence({activity: {name: 'Type "!help" to get all commands'}});
 
 
-	TLAServer = client.guilds.cache.array()[0];
+	TLAServer = client.guilds.cache.first();
+	IDS = (TLAServer.id === PROD_GUILD ? require('./ids.json') : require('./ids_test.json'));
+	
 	unverifiedRole = TLAServer.roles.cache.find(role => role.name === 'Unverified');
 
 	// Update counter
-	updateCounter = async () => {
-		let rolesCount = { 
-			Verified: 0,
-			Unverified: 0,
-			CTE: 0,
-			Assemblian: 0,
-			Visitor: 0,
-			"Electoral Citizen": 0,
-			Online: 0,
-			Offline: 0
-		};
-		pronouns.forEach(role => rolesCount[role] = 0);
-		TLAServer.members.cache.forEach(member => {
-			for (var role in rolesCount) {
-				if (member.roles.cache.find(r => r.name === role)) { // User has role
-					rolesCount[role] ++;
-				}
-			}
-			if (member.user.presence.status === "offline") {
-				rolesCount.Offline ++;
-			} else {
-				rolesCount.Online ++;
-			}
-		});
 
-		const discordEmbed = new Discord.MessageEmbed()
-			.setColor('#ce0001')
-			.setAuthor("\u{1f4ca}SERVER STATS \u{1f4ca}")
-			// Convert TLAServer.members.cache to array of keys, then find length and append to message
-			.addField("Total members in server", TLAServer.members.cache.keyArray().length)
-		
-		for (var role in rolesCount) {
-			discordEmbed.addField(role, rolesCount[role], true);
-		}
-
-		const counterMessage = await TLAServer.channels.cache.find(channel => channel.name === "member-counter").messages.fetch(counterID);
-
-		counterMessage.edit('', discordEmbed);
-	}
 	updateCounter();
 
 	numRequests = 12; // 12 requests will be made
@@ -327,10 +338,11 @@ client.once('ready', async () => {
 	const assemblianRole = TLARoles.find(role => role.name === "Assemblian");
 	const visitorRole = TLARoles.find(role => role.name === "Visitor");
 	const CTERole = TLARoles.find(role => role.name === "CTE");
-	const electoralCitizenRole = TLARoles.find(role => role.name === "Electoral Citizen");
+	const electoralCitizenRole = TLARoles.find(role => role.name === "WA Citizen");
 
-	TLAServer.members.cache.forEach(async member => {
-		item = await userCollections.findOne({id: member.id})
+	// Iterate through all members. This will add them all to the cache as well.
+	(await TLAServer.members.list({ limit: 1000 })).forEach(async member => {
+		item = await userCollections.findOne({ id: member.id })
 		if (! item) return; // member is bot
 		const memberRoles = Array.from(member.roles.cache.values()); // Roles of member
 
@@ -343,6 +355,7 @@ client.once('ready', async () => {
 		}
 
 		const rawNation = item.nation.toLowerCase().replace(/ /g, '_');
+		console.log(rawNation)
 		if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
 			const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
 			member.send(CTEMessage);
@@ -431,9 +444,9 @@ client.once('ready', async () => {
 
 	CICollections.updateOne({id: "CI"}, {'$set': {"maxTLA": maxTLA}});
 
-	const reminders = await scheduledReminders.find().toArrayAsync();
-	reminders.forEach(reminder => {
-		const user = client.users.cache.find(u => u.id === reminder.id);
+	const reminders = await scheduledReminders.find().toArray();
+	reminders.forEach(async reminder => {
+		const user = await client.users.fetch(reminder.id);
 		const reminderDate = new Date(reminder.time);
 
 		// Schedule reminder if reminder is due after current date and time
@@ -512,7 +525,7 @@ client.on("guildMemberAdd", async newMember => {
 	newMember.roles.add(unverifiedRole); // Add unverified role
 	const welcomeMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "welcomeMessage.txt"), "utf-8")); // eval is used to add interpolation for text in welcomeMessage.txt
 	newMember.user.send(welcomeMessage);
-	userCollections.insertOne({id: newMember.id, nation: null, time: new Date().getTime()});
+	userCollections.insertOne({id: newMember.id.toString(), nation: null, time: new Date().getTime()});
 	updateCounter();
 });
 
