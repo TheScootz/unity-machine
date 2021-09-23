@@ -238,6 +238,7 @@ updateCounter = async () => {
 
 // Reply to user
 client.on('messageCreate', async msg => {
+	console.log(msg.author);
 	// Prevent bot from responding to its own messages
 	if (msg.author === client.user) return;
 
