@@ -268,11 +268,11 @@ client.on('messageCreate', async msg => {
 			msg.channel.send(`Error: \`!${primaryCommand}\` does not exist. Use \`!help\` to find all commands.`);
 			return;
 		}
-		//try {
+		try {
 			await foundCommand.execute(msg, args);
-		/*} catch (err) {
+		} catch (err) {
 			msg.channel.send(`An unexpected error occurred: \`${err}\``);
-		}*/
+		}
 	}
 });
 
@@ -283,7 +283,9 @@ client.once('ready', async () => {
 
 
 	TLAServer = client.guilds.cache.first();
+	console.log(TLAServer);
 	IDS = (TLAServer.id === PROD_GUILD ? require('./ids.json') : require('./ids_test.json'));
+	console.log(IDS);
 	
 	unverifiedRole = TLAServer.roles.cache.find(role => role.name === 'Unverified');
 
