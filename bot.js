@@ -267,7 +267,8 @@ client.on('messageCreate', async msg => {
 		
 		// If command does not exist
 		if (! foundCommand) {
-			msg.channel.send(`Error: \`!${primaryCommand}\` does not exist. Use \`!help\` to find all commands.`);
+			msg.channel.send(`Error: \`!${primaryCommand}\` does not exist. Use \`!help\` to find all commands.`)
+				.catch(() => msg.channel.send(`Error: That command does not exist. Use \`!help\` to find all commands.`));
 			return;
 		}
 		try {
