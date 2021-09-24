@@ -1,6 +1,6 @@
 module.exports = {
 	name: "ninfo",
-	aliases: ['n'],
+	aliases: ['n', 'nation'],
 	help: `\`!ninfo [Nation]\`
 
 **Aliases:** \`!n\`

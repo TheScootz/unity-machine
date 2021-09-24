@@ -244,9 +244,11 @@ client.on('messageCreate', async msg => {
 	// Do not respond to bot messages
 	if (msg.author.bot) return;
 
+
 	// Reply to special commands
-	if (client.specialCommands.find(command => command.name.includes(msg.content.toLowerCase()))) {
-		client.specialCommands.find(command => command.name.includes(msg.content.toLowerCase())).execute(msg);
+	let specialCommandCheck = Array.from(client.specialCommands.keys()).find(command => command.includes(msg.content.toLowerCase()));
+	if (specialCommandCheck) {
+		client.specialCommands.get(specialCommandCheck).execute(msg);
 		return;
 	}
 
@@ -260,8 +262,8 @@ client.on('messageCreate', async msg => {
 		nickname = (msg.channel.type === 'DM' ? msg.author.username : (await TLAServer.members.fetch(msg.author)).displayName); // Nickname of user, returns username if contacted via DM
 
 		helpPrimaryCommand = `Please use \`!help ${primaryCommand}\` to show more information.`; // Directs user to use !help command in error
-		
-		let foundCommand = client.commands.find(command => command.name.includes(primaryCommand)); // Key in client.commands containing primaryCommand
+
+		let foundCommand = client.commands.get(Array.from(client.commands.keys()).find(command => command.includes(primaryCommand))); // Key in client.commands containing primaryCommand
 		
 		// If command does not exist
 		if (! foundCommand) {
@@ -284,7 +286,6 @@ client.once('ready', async () => {
 
 	TLAServer = client.guilds.cache.first();
 	IDS = (TLAServer.id === PROD_GUILD ? require('./ids.json') : require('./ids_test.json'));
-	console.log(IDS);
 	
 	unverifiedRole = TLAServer.roles.cache.find(role => role.name === 'Unverified');
 
