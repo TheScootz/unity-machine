@@ -218,6 +218,7 @@ updateCounter = async () => {
 				rolesCount[role]++;
 			}
 		}
+		console.log(member.presence);
 		if (member.presence.status === "offline") {
 			rolesCount.Offline++;
 		} else {
@@ -534,5 +535,6 @@ client.on("guildMemberRemove", member => {
 	scheduledReminders.deleteMany({"id": member.id}); // Delete all reminders
 	updateCounter();
 });
+
 console.log("Discord.js version " + Discord.version);
 client.login(process.env.BOT_TOKEN);
