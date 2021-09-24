@@ -218,7 +218,7 @@ updateCounter = async () => {
 				rolesCount[role]++;
 			}
 		}
-		if (member.presence.status && member.presence.status === "offline") {
+		if (member.presence && member.presence.status === "offline") {
 			rolesCount.Offline++;
 		} else {
 			rolesCount.Online++;
