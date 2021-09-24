@@ -18,7 +18,7 @@ ytdl = require('ytdl-core');
 
 const botPrefix = "!";
 const version = "2.3.0"; // Version
-PROD_GUILD = 256222023993393152;
+PROD_GUILD = "256222023993393152";
 
 numRequests = 0;
 schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
@@ -283,7 +283,6 @@ client.once('ready', async () => {
 
 
 	TLAServer = client.guilds.cache.first();
-	console.log(TLAServer);
 	IDS = (TLAServer.id === PROD_GUILD ? require('./ids.json') : require('./ids_test.json'));
 	console.log(IDS);
 	
