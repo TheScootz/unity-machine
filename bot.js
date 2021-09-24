@@ -534,5 +534,5 @@ client.on("guildMemberRemove", member => {
 	scheduledReminders.deleteMany({"id": member.id}); // Delete all reminders
 	updateCounter();
 });
-
+console.log("Discord.js version " + Discord.version);
 client.login(process.env.BOT_TOKEN);
