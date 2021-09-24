@@ -84,6 +84,6 @@ module.exports = {
 			.setFooter(responseObject.founded)
 			.setTimestamp();
 
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

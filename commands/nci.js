@@ -52,6 +52,6 @@ module.exports = {
 		for (let i = 0; i < 10; i ++) {
 			discordEmbed.addField(`Score in ${listOfCensuses[i]}`, CIScores[i].toFixed(5));
 		}
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

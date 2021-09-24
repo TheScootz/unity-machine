@@ -65,6 +65,6 @@ module.exports = {
 			discordEmbed.addField(`${i + 1}. ${nationInfos[i].nation}`, `Score: ${(nationInfos[i].score).toFixed(4)}`);
 		}
 
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

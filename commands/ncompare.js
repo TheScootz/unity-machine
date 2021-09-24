@@ -63,6 +63,6 @@ module.exports = {
 		
 		nationScores.forEach((element, index) => discordEmbed.addField(`${index + 1}. ${element.nation}`, `Score: ${element.score}`));
 
-		msg.channel.send(discordEmbed)
+		msg.channel.send({ embeds: [discordEmbed] })
 	}
 }

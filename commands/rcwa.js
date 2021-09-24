@@ -53,6 +53,6 @@ module.exports = {
 		for (let i = 0; i < regionInfo.length; i ++) {
 			discordEmbed.addField(`${i + 1}. ${regionInfo[i].region}`, `Number of WA Nations: ${regionInfo[i]["WA Nations"]}`);
 		}
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

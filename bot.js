@@ -169,7 +169,10 @@ executePythonFile = async (pythonFile, args) => {
 
 // Write file and send it
 writeAndSend = async (msg, filename, data) => {
-	await fs.writeFileAsync(filename, data);
+	//stream = fs.createWriteStream(filename)
+	//data.forEach(async content => await stream.write(content));
+
+	await fs.writeFile(filename, data, err => { if (err) console.error(err); });
 	await msg.channel.send({files: [filename]});
 	fs.unlink(filename, err => {if (err) console.error(err);}); // console.error any error if any
 }
@@ -347,7 +350,6 @@ client.once('ready', async () => {
 			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
 				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
 			}
-			console.log(moment().diff(moment(Number(item.time)), 'hours'));
 			return;
 		}
 
@@ -464,7 +466,7 @@ client.once('ready', async () => {
 	const oocChannel = TLAServer.channels.cache.find(channel => channel.name === "out-of-context"); // Channel for OOC posts
 	let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
 	// Filter out all mesages with one image
-	oocMessages = oocMessages.filter(message => !(message.attachments.size === 1 && isImage(message.attachments.array()[0].url)));
+	oocMessages = oocMessages.filter(message => !(message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
 	oocMessages = oocMessages.filter(message => ! message.pinned); // Filter out all pinned messages
 	oocMessages.forEach(message => message.delete()); // Delete all messages
 	
@@ -479,15 +481,15 @@ client.on("shardDisconnected", () => console.log("Disconnected."));
 
 
 // A user adds reaction to a message
-client.on("messageReactionAdd", (reaction, user) => {
+client.on("messageReactionAdd", async (reaction, user) => {
 	if (user === client.user) return;
 	if (rpsDeleteJobs.has(reaction.message.id)) {
 		const validMoves = ["\u{1f311}", "\u{1f4f0}", "\u2702"]; // Moves makable in Rock Paper Scissors
 		if (! validMoves.includes(reaction.emoji.name)) return; // Reacted emoji not in validMoves
 		const userMove = reaction.emoji.name;
-		const nickname = reaction.message.channel.type === "dm" ? user.username : TLAServer.member(user).displayName;
+		const nickname = reaction.message.channel.type === "DM" ? user.username : (await TLAServer.members.fetch(user)).displayName;
 		const computerMove = getRandomObject(validMoves); // Represents index of move computer made
-
+		
 		const discordEmbed = new Discord.MessageEmbed();
 		discordEmbed
 			.setColor('#ce0001')
@@ -502,7 +504,8 @@ client.on("messageReactionAdd", (reaction, user) => {
 			discordEmbed.setDescription("**You Win!**");
 		} else discordEmbed.setDescription("**You Lost!**"); // Lose
 
-		reaction.message.edit(discordEmbed);
+		reaction.message.edit({ embeds: [discordEmbed] });
+		reaction.message.reactions.removeAll();
 
 		rpsDeleteJobs.get(reaction.message.id).cancel(); // Cancel delete job for message
 		rpsDeleteJobs.delete(reaction.message.id);

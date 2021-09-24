@@ -15,7 +15,7 @@ module.exports = {
 			msg.channel.send(`Error: ${tag} is not part of The Leftitst Assembly Server.`);
 			return;
 		}
-		if (TLAServer.member(user).roles.cache.find(role => role.name === "Unverified")) { // Not yet verified
+		if ((await TLAServer.members.fetch(user)).roles.cache.get(IDS.roles.unverified)) { // Not yet verified
 			msg.channel.send(`Error: ${tag} is not verified yet.`)
 			return;
 		}

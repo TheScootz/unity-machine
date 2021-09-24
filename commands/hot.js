@@ -2,7 +2,7 @@ module.exports = {
 	name: "hot",
 	help: `\`!hot [Subreddit] [Number of posts] [Stickied posts included]\`
 
-**Usage:** The subreddit entered must have the "\r" portion removed. All NSFW subreddits are **banned**. The number of posts argument entered must be an integer over 0 and equal to or below 20, and defaults to 5. The stickied posts argument must be "True" or "False", and defaults to False.
+**Usage:** The subreddit entered must have the "r/" portion removed. All NSFW subreddits are **banned**. The number of posts argument entered must be an integer over 0 and equal to or below 20, and defaults to 5. The stickied posts argument must be "True" or "False", and defaults to False.
 **Details:** The command takes a random post from the hottest (usually hottest 5) posts of a given subreddit. Then, the post title, a link to the post, and the number of upvotes will be returned. If applicable, the posts link, image, and text content will also be returned.
 **Examples:**
 \`!hot aww\`
@@ -67,6 +67,6 @@ module.exports = {
 		} else if (submissionInfo.type === "Post") {
 			discordEmbed.setDescription(he.decode(submissionInfo.content));
 		}
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

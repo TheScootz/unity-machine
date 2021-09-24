@@ -66,18 +66,18 @@ module.exports = {
 
 		responseObject.foundedRelative = regionResponse[4] === '0' ? "in Antiquity" : regionResponse[4]; // Checks if region was founded in Antiquity
 		responseObject.foundedTime = regionResponse[5] === '0' ? '\u200B' : moment.unix(regionResponse[5]).format('Do [of] MMMM, YYYY');
-
+		
 		const discordEmbed = new Discord.MessageEmbed()
 			.setColor('#ce0001')
 			.setAuthor(responseObject.name, NSFavicon, `https://www.nationstates.net/region=${region.replace(/ /g, '_')}`)
 			.setThumbnail(responseObject.flag)
 			.addField("Number of nations", responseObject.numnations, true)
 			.addField("WA Delegate", responseObject.delegate, true)
-			.addField("Founder", responseObject.founder, true)
+			.addField("Founder", responseObject.founder[0], true)
 			.addField(`Founded ${responseObject.foundedRelative}`, responseObject.foundedTime, true)
 			.setFooter(`Power: ${responseObject.power}`)
 			.setTimestamp()
 		
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

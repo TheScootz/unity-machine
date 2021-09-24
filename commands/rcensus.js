@@ -65,6 +65,6 @@ module.exports = {
 			.addField(`Score in ${responseObject.censusName}`, responseObject.score, true)
 			.addField(`Top ${responseObject.worldRankPercentage}% in the world`, `# ${responseObject.worldRank} in the world`, true)
 
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

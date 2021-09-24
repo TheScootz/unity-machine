@@ -14,7 +14,7 @@ module.exports = {
 			.setAuthor("Rock, Paper, Scissors!")
 			.setDescription("React below to play!")
 
-		let sentMessage = await msg.channel.send(discordEmbed);
+		let sentMessage = await msg.channel.send({ embeds: [discordEmbed] });
 		await sentMessage.react("\u{1f311}");
 		await sentMessage.react("\u{1f4f0}");
 		await sentMessage.react("\u2702");

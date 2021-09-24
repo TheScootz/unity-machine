@@ -9,9 +9,9 @@ module.exports = {
 
 	async execute(msg, args) {
 		const nation = args.join(' ');
-		nationClaims = await userCollections.find({"nation": nation}).toArrayAsync();
+		nationClaims = await userCollections.find({"nation": nation}).toArray();
 		nationClaims = nationClaims.map(item => client.users.cache.find(u => u.id === item.id)); // Convert IDs to User objects
-		nationClaims = nationClaims.filter(user => TLAServer.member(user).roles.cache.find(role => role.name === "Verified")); // Filter out users that are not verified
+		//nationClaims = nationClaims.filter(user => (await TLAServer.members.fetch(user)).roles.cache.get(IDS.roles.verified)); // Filter out users that are not verified
 		if (nationClaims.length === 0) { // No users claim nation
 			msg.channel.send(`No users claim ${nation}.`);
 			return;

@@ -59,7 +59,7 @@ module.exports = {
 				discordEmbed.addField("Delegate vote", `[${delegateInfo[0]}](https://nationstates.net/nation=${delegateInfo[0].replace(/ /g, '_')}) - ${delegateGAVoteEmoji}`);
 			}
 
-			msg.channel.send(discordEmbed);
+			msg.channel.send({ embeds: [discordEmbed] });
 		
 		} else {
 		numRequests -= 2;
@@ -98,7 +98,7 @@ module.exports = {
 				discordEmbed.addField("Delegate vote", `[${delegateInfo[0]}](https://nationstates.net/nation=${delegateInfo[0].replace(/ /g, '_')}) - ${delegateSCVoteEmoji}`);
 			}
 
-			msg.channel.send(discordEmbed);
+			msg.channel.send({ embeds: [discordEmbed] });
 		
 		} else {
 		numRequests -= 2;

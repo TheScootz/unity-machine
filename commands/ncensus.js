@@ -37,7 +37,7 @@ module.exports = {
 		try {
 			var response = await getRequest(link);
 		} catch (err) {
-			msg.channel.send(err === "404 Not Found" ? `Error: Nation does not exist.` : `An unexpected error occured: \`${err}\``);
+			msg.channel.send((err === "404 Not Found") ? `Error: Nation does not exist.` : `An unexpected error occured: \`${err}\``);
 		}
 
 		const responseObject = {
@@ -75,6 +75,6 @@ module.exports = {
 			.addField(`Percentile rank in ${responseObject.region}`, `Top ${responseObject.regionRankPercentage}%`, true)
 			.setTimestamp() // Add timestamp
 
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

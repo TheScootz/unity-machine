@@ -25,7 +25,7 @@ module.exports = {
 			.addField("Current Secretary-General", "[Kuriko](https://www.nationstates.net/nation=kuriko)")
 			.setTimestamp()
 		
-		await msg.channel.send(discordEmbed);
+		await msg.channel.send({ embeds: [discordEmbed] });
 		message = await msg.channel.send("Current Resolutions at vote:");
 
 		const GAInfo = await getRequest("https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=resolution");
@@ -42,7 +42,7 @@ module.exports = {
 				.addField("Total Votes Against", GAInfo[9], true)
 				.setFooter("Improving the World One Resolution at a Time")
 
-			await msg.channel.send(discordEmbed);
+			await msg.channel.send({ embeds: [discordEmbed] });
 		} else {
 			numRequests --;
 		}
@@ -63,7 +63,7 @@ module.exports = {
 				.addField("Total Votes Against", SCInfo[9], true)
 				.setFooter("Spreading interregional peace and goodwill, via force if necessary")
 
-			await msg.channel.send(discordEmbed);
+			await msg.channel.send({ embeds: [discordEmbed] });
 		} else {
 			numRequests --;
 		}

@@ -24,6 +24,6 @@ module.exports = {
 			msg.channel.send(err === "404 Not Found" ? `Error: Region does not exist.` : `An unexpected Error occurred: ${err}`);
 		}
 		let confirmedEmbassies = embassies.REGION.EMBASSIES.EMBASSY.filter(embassy => typeof(embassy) === "string"); // Embassies that are not rejected/denied/being constructed/closing
-		writeAndSend(msg, `Embassies of ${region}`, confirmedEmbassies.join('\n'));
+		writeAndSend(msg, `Embassies of ${region}.txt`, confirmedEmbassies.join('\n'));
 	}
 }

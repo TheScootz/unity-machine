@@ -26,6 +26,6 @@ module.exports = {
 			.addField("Example", searchResults.example)
 			.setFooter(`Author: ${searchResults.author}`)
 		
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }

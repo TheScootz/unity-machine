@@ -34,6 +34,6 @@ module.exports = {
 		const data = await getRequest(endorsementsLink);
 
 		const filename = `Nations endorsing ${nation}.txt`;
-		writeAndSend(msg, filename, data);
+		writeAndSend(msg, filename, data[0]);
 	}
 }

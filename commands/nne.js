@@ -40,10 +40,9 @@ module.exports = {
 		regionMembers = regionMembers[0].split(':');
 		const waRegionMembers = regionMembers.filter(nation => WAResponse.includes(nation)); //Filter nations not part of WA
 
-
 		const waNationsNotEndorsingNation = waRegionMembers.filter(nation => ! endorsements.includes(nation)); // Filter all nations that are endorsing given nation
 
 		const filename = `Nations not endorsing ${nation}.txt`;
-		writeAndSend(msg, filename, waNationsNotEndorsingNation);
+		writeAndSend(msg, filename, waNationsNotEndorsingNation.join());
 	}
 }

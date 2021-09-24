@@ -24,6 +24,6 @@ module.exports = {
 			.setAuthor(`Wikipedia: ${pageRequest}`, "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1920px-Wikipedia-logo-v2.svg.png", `https://en.wikipedia.org/wiki/${pageRequest.replace(/ /g, '_')}`)
 			.setDescription(data.data)
 
-		msg.channel.send(discordEmbed);
+		msg.channel.send({ embeds: [discordEmbed] });
 	}
 }
