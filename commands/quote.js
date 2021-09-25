@@ -15,7 +15,7 @@ module.exports = {
 			args = args.join(' ');
 			quotes = quotes.filter(quote => quote.toLowerCase().endsWith(args.toLowerCase())); // toLowerCase() allows for case-insensitive matching
 			if (quotes.length === 0) { // No quotes
-				msg.channel.send(`Sorry, but there are no quotes from ${args}. If you want quotes from them, please contact Scootz#9999.`);
+				msg.channel.send(`Sorry, but there are no quotes from ${args}. If you want quotes from them, please contact Scootz#5514.`);
 				return;
 			}
 		}
