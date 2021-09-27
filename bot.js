@@ -236,7 +236,7 @@ updateCounter = async () => {
 
 	const counterMessage = await (await TLAServer.channels.fetch(IDS.channels.counter)).messages.fetch(counterID);
 
-	counterMessage.edit({ embeds: [discordEmbed] });
+	counterMessage.edit({ embeds: [discordEmbed] }).catch(console.error);
 }
 
 // Reply to user
@@ -363,9 +363,6 @@ client.once('ready', async () => {
 	
 			if (memberRoles.includes(assemblianRole)) { // User is marked as Assemblian
 				member.roles.remove(assemblianRole);
-				if (memberRoles.includes(electoralCitizenRole)) { // User is marked as Electoral Citizen
-					member.roles.remove(electoralCitizenRole);
-				}
 			} else {
 				member.roles.remove(visitorRole);
 			}
