@@ -8,6 +8,7 @@ module.exports = {
 \`!verifyme nottinhaps XsOIoNxQWtAlZfIeRgx8obMgJWwOA6znSDmA9xJQKBA\``,
 	
 	async execute(msg, args) {
+        console.log(msg.author + " attempted to verify: " + msg.content);
 		if (args.length > 2) {
 			msg.channel.send(`Error: Too many arguments. ${helpPrimaryCommand}`);
 			return;
@@ -24,7 +25,6 @@ module.exports = {
 			tooManyRequests(msg);
 			return;
 		}
-        console.log(msg.author + " attempted to verify: " + msg.content);
 		numRequests ++;
 
 
