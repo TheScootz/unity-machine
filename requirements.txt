@@ -1,4 +1,3 @@
 praw==7.1.0
--e git+git://github.com/goldsmith/Wikipedia.git#egg=wikipedia
 matplotlib==3.3.2
 
