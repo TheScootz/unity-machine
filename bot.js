@@ -356,7 +356,12 @@ client.once('ready', async () => {
 			return;
 		}
 
-		const rawNation = item.nation.toLowerCase().replace(/ /g, '_');
+		try {
+			const rawNation = item.nation.toLowerCase().replace(/ /g, '_');
+		} catch (err) {
+			console.error(`Error with nation ${item}: ${err}`)
+		}
+
 		if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
 			const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
 			member.send(CTEMessage);
