@@ -358,44 +358,44 @@ client.once('ready', async () => {
 
 		try {
 			const rawNation = item.nation.toLowerCase().replace(/ /g, '_');
+
+			if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
+				const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
+				member.send(CTEMessage);
+	
+				if (memberRoles.includes(assemblianRole)) { // User is marked as Assemblian
+					member.roles.remove(assemblianRole);
+				} else {
+					member.roles.remove(visitorRole);
+				}
+
+				member.roles.remove(verifiedRole);
+				member.roles.add(CTERole);
+
+				userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime(), nation: null}});
+
+			} else if (memberRoles.includes(assemblianRole) && ! isInTLA(rawNation)) { // Is marked Assemblian but not in TLA
+				member.roles.remove(assemblianRole);
+				member.roles.add(visitorRole);
+
+			} else if (isInTLA(rawNation) && memberRoles.includes(visitorRole)) { // Is marked Visitor but nation in TLA
+				member.roles.remove(visitorRole);
+				member.roles.add(assemblianRole);
+
+			} else if (nations.some(nation => nation === rawNation) && memberRoles.includes(CTERole)) { // User is marked CTE but nation exists
+				member.roles.remove(CTERole);
+				member.roles.add(verifiedRole);
+				member.roles.add(isInTLA(rawNation) ? assemblianRole : visitorRole); // If user is in TLA add Assemblian role else add Visitor role
+			}
+
+			/*if (isElectoral(rawNation) && ! memberRoles.includes(electoralCitizenRole)) { // User should be marked Electoral Citizen but is not 
+				member.roles.add(electoralCitizenRole);
+			} else if (! isElectoral(rawNation) && memberRoles.includes(electoralCitizenRole)) { // User is not Electoral Citizen but is marked as such
+				member.roles.remove(electoralCitizenRole);
+			}*/
 		} catch (err) {
 			console.error(`Error with nation ${item}: ${err}`)
 		}
-
-		if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
-			const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
-			member.send(CTEMessage);
-	
-			if (memberRoles.includes(assemblianRole)) { // User is marked as Assemblian
-				member.roles.remove(assemblianRole);
-			} else {
-				member.roles.remove(visitorRole);
-			}
-
-			member.roles.remove(verifiedRole);
-			member.roles.add(CTERole);
-
-			userCollections.updateOne({id: member.id}, {'$set': {time: new Date().getTime(), nation: null}});
-
-		} else if (memberRoles.includes(assemblianRole) && ! isInTLA(rawNation)) { // Is marked Assemblian but not in TLA
-			member.roles.remove(assemblianRole);
-			member.roles.add(visitorRole);
-
-		} else if (isInTLA(rawNation) && memberRoles.includes(visitorRole)) { // Is marked Visitor but nation in TLA
-			member.roles.remove(visitorRole);
-			member.roles.add(assemblianRole);
-
-		} else if (nations.some(nation => nation === rawNation) && memberRoles.includes(CTERole)) { // User is marked CTE but nation exists
-			member.roles.remove(CTERole);
-			member.roles.add(verifiedRole);
-			member.roles.add(isInTLA(rawNation) ? assemblianRole : visitorRole); // If user is in TLA add Assemblian role else add Visitor role
-		}
-
-		/*if (isElectoral(rawNation) && ! memberRoles.includes(electoralCitizenRole)) { // User should be marked Electoral Citizen but is not 
-			member.roles.add(electoralCitizenRole);
-		} else if (! isElectoral(rawNation) && memberRoles.includes(electoralCitizenRole)) { // User is not Electoral Citizen but is marked as such
-			member.roles.remove(electoralCitizenRole);
-		}*/
 	});
 
 	// Update statistics used for Comrade Index
