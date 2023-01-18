@@ -21,7 +21,7 @@ const version = "2.3.0"; // Version
 PROD_GUILD = "256222023993393152";
 
 numRequests = 0;
-schedule.scheduleJob('/30 * * * * *', () => numRequests = 0);
+schedule.scheduleJob('*/30 * * * * *', () => numRequests = 0);
 
 // Send message stating there are too many API requests
 tooManyRequests = msg => {
@@ -244,6 +244,7 @@ client.on('messageCreate', async msg => {
 	// Do not respond to bot messages
 	if (msg.author.bot) return;
 
+	console.log(numRequests);
 
 	// Reply to special commands
 	let specialCommandCheck = Array.from(client.specialCommands.keys()).find(command => command.includes(msg.content.toLowerCase()));
