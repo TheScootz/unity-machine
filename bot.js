@@ -244,8 +244,6 @@ client.on('messageCreate', async msg => {
 	// Do not respond to bot messages
 	if (msg.author.bot) return;
 
-	console.log(numRequests);
-
 	// Reply to special commands
 	let specialCommandCheck = Array.from(client.specialCommands.keys()).find(command => command.includes(msg.content.toLowerCase()));
 	if (specialCommandCheck) {
