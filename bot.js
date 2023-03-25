@@ -1,17 +1,17 @@
 Promise = require('bluebird');
 
 childProcess = require('child_process');
-redis = require('redis')
 Discord = require('discord.js');
 fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 fs = Promise.promisifyAll(require('fs'));
 const {google} = require('googleapis');
-isImage = require('is-image');
 he = require('he');
+isImage = require('is-image');
 moment = require('moment');
 mongo = Promise.promisifyAll(require('mongodb'));
 path = require('path');
 Papa = require('papaparse');
+redis = require('redis')
 schedule = require('node-schedule');
 const striptags = require('striptags');
 const xml2js = require('xml2js');
