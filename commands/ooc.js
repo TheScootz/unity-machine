@@ -8,11 +8,8 @@ module.exports = {
 \`!ooc\``,
 	
 	async execute(msg, args) {
-		const oocChannel = await TLAServer.channels.fetch(IDS.channels.ooc); // Channel for OOC posts
-		let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
-		oocMessages = oocMessages.filter(message => message.attachments.size === 1); // Only include oocMessages with one attachment
-		oocMessages = oocMessages.map(message => message.attachments.first().attachment); // Only include the url of a message's attachment
-		oocMessages = oocMessages.filter(messageAttachmentURL => isImage(messageAttachmentURL)); // Only include images
-		msg.channel.send({files: [getRandomObject(oocMessages)]}); // Send random image from message url array
+		messageId = await redisClient.sRandMember("messageIds") // Get random image from cache
+		imageUrl = await redisClient.hGet(messageId, "imageUrl") // Get that image's URL
+		msg.channel.send({files: [imageUrl]}); // Send that image
 	}
 }

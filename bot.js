@@ -1,7 +1,7 @@
 Promise = require('bluebird');
 
 childProcess = require('child_process');
-redis = require('@redis/client')
+const redis = require('@redis/client')
 Discord = require('discord.js');
 fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 fs = Promise.promisifyAll(require('fs'));
