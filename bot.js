@@ -1,6 +1,7 @@
 Promise = require('bluebird');
 
 childProcess = require('child_process');
+redis = require('@redis/client')
 Discord = require('discord.js');
 fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 fs = Promise.promisifyAll(require('fs'));
@@ -49,6 +50,13 @@ MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}
 	(async () => pronouns = (await dbo.collection("pronouns").findOne({"id": "pronouns"})).pronouns)(); // Array of all available pronouns
 	//(async () => nonWAElectoralCitizens = (await dbo.collection("nonWAElectoralCitizens").findOne({"id": "nonWAElectoralCitizens"})).nonWAElectoralCitizens)(); // Array of all non-WA Electoral Citizens of TLA
 });
+
+// Initialise Redis
+async () => {
+	const redisClient = redis.createClient();
+	await redisClient.connect();
+	redisClient.on('error', err => console.error(`Could not connect to Redis: ${err}`))
+}
 
 // Initialise Google API
 youtube = google.youtube({
@@ -470,10 +478,19 @@ client.once('ready', async () => {
 	// Delete text-only messages in #out-of-context
 	const oocChannel = TLAServer.channels.cache.find(channel => channel.name === "out-of-context"); // Channel for OOC posts
 	let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
+	let oocMessages2 = oocMessages;
 	// Filter out all mesages with one image
 	oocMessages = oocMessages.filter(message => !(message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
 	oocMessages = oocMessages.filter(message => ! message.pinned); // Filter out all pinned messages
 	oocMessages.forEach(message => message.delete()); // Delete all messages
+
+	// Add all OOC images to cache
+	oocMessages2 = oocMessages2.filter(message => (message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
+	oocMessages2.forEach(async (message) => {
+		// For each image in ooc, add its ID to a set and store the image as a hash
+		await redisClient.sAdd("messageIds", message.id)
+		await redisClient.hSet(`${message.id}`, "imageUrl", message.attachments[0].url)
+	})
 	
 	console.log("Ready to take commands!");
 });
