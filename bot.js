@@ -6,6 +6,8 @@ Discord = require('discord.js');
 fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 fs = Promise.promisifyAll(require('fs'));
 const {google} = require('googleapis');
+const { redis } = require('googleapis/build/src/apis/redis');
+const isImage = require('is-image');
 he = require('he');
 isImage = require('is-image');
 moment = require('moment');
@@ -260,6 +262,12 @@ client.on('messageCreate', async msg => {
 		return;
 	}
 
+	// Adds ooc image to cache
+	if (msg.channelId === IDS.channels.ooc && msg.attachments.size === 1 && isImage(msg.attachments[0].attachment)) {
+		await redisClient.sAdd("messageIds", msg.id);
+		await redisClient.hSet(msg.id, "ImageUrl", msg.attachments[0].attachment.url);
+	}
+
 	// Received message starts with bot prefix
 	if (msg.content.startsWith(botPrefix)) {
 		const fullCommand = msg.content.substr(botPrefix.length); // Remove the leading bot prefix
@@ -488,9 +496,9 @@ client.once('ready', async () => {
 	oocMessages2 = oocMessages2.filter(message => (message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
 	oocMessages2.forEach(async (message) => {
 		// For each image in ooc, add its ID to a set and store the image as a hash
-		await redisClient.sAdd("messageIds", message.id)
-		await redisClient.hSet(`${message.id}`, "imageUrl", message.attachments[0].url)
-	})
+		await redisClient.sAdd("messageIds", message.id);
+		await redisClient.hSet(`${message.id}`, "imageUrl", message.attachments[0].attachment.url);
+	});
 	
 	console.log("Ready to take commands!");
 });
