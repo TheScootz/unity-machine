@@ -19,6 +19,7 @@ ytdl = require('ytdl-core');
 const botPrefix = "!";
 const version = "2.3.0"; // Version
 PROD_GUILD = "256222023993393152";
+require('dotenv').config()
 
 numRequests = 0;
 schedule.scheduleJob('*/30 * * * * *', () => numRequests = 0);
