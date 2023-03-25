@@ -295,6 +295,15 @@ client.on('messageCreate', async msg => {
 	}
 });
 
+// Message has been deleted
+client.on('messageDelete', async (msg) => {
+	// Checks if it is in cache
+	if (await redisClient.sIsMember("messageIds", msg.id) === 1) {
+		await redisClient.sRem("messageIds", msg.id)
+		await redisClient.hDel(msg.id, "imageUrl")
+	}
+})
+
 // Client is connected to Discord
 client.once('ready', async () => {
 	console.log("Connected as " + client.user.tag);  // Confirm connection
