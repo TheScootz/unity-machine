@@ -1,12 +1,12 @@
 Promise = require('bluebird');
 
 childProcess = require('child_process');
-const redis = require('redis')
+redis = require('redis')
 Discord = require('discord.js');
 fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 fs = Promise.promisifyAll(require('fs'));
 const {google} = require('googleapis');
-const isImage = require('is-image');
+isImage = require('is-image');
 he = require('he');
 moment = require('moment');
 mongo = Promise.promisifyAll(require('mongodb'));
@@ -51,7 +51,7 @@ MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}
 });
 
 // Initialise Redis
-const redisClient = redis.createClient();
+redisClient = redis.createClient();
 
 // Initialise Google API
 youtube = google.youtube({
