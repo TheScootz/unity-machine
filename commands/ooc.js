@@ -1,3 +1,5 @@
+const { assuredworkloads } = require("googleapis/build/src/apis/assuredworkloads")
+
 module.exports = {
 	name: "ooc",
 	help: `\`!ooc\`
@@ -8,6 +10,8 @@ module.exports = {
 \`!ooc\``,
 	
 	async execute(msg, args) {
+		const redisClient = require('redis').createClient()
+		await redisClient.connect()
 		messageId = await redisClient.sRandMember("messageIds") // Get random image from cache
 		imageUrl = await redisClient.hGet(messageId, "imageUrl") // Get that image's URL
 		msg.channel.send({files: [imageUrl]}); // Send that image

@@ -1,7 +1,7 @@
 Promise = require('bluebird');
 
 childProcess = require('child_process');
-const redis = require('@redis/client')
+const redis = require('redis')
 Discord = require('discord.js');
 fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 fs = Promise.promisifyAll(require('fs'));
@@ -52,11 +52,7 @@ MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}
 });
 
 // Initialise Redis
-async () => {
-	const redisClient = redis.createClient();
-	await redisClient.connect();
-	redisClient.on('error', err => console.error(`Could not connect to Redis: ${err}`))
-}
+const redisClient = redis.createClient();
 
 // Initialise Google API
 youtube = google.youtube({
@@ -261,9 +257,10 @@ client.on('messageCreate', async msg => {
 	}
 
 	// Adds ooc image to cache
-	if (msg.channelId === IDS.channels.ooc && msg.attachments.size === 1 && isImage(msg.attachments[0].attachment)) {
+	if (msg.channelId === IDS.channels.ooc && msg.attachments.size === 1 && isImage(msg.attachments.first().attachment)) {
+		console.log(msg.attachments.first().attachment)
 		await redisClient.sAdd("messageIds", msg.id);
-		await redisClient.hSet(msg.id, "ImageUrl", msg.attachments[0].attachment.url);
+		await redisClient.hSet(msg.id, "ImageUrl", msg.attachments.first().attachment);
 	}
 
 	// Received message starts with bot prefix
@@ -304,6 +301,9 @@ client.on('messageDelete', async (msg) => {
 
 // Client is connected to Discord
 client.once('ready', async () => {
+	// Connect Redis client
+	await redisClient.connect();
+	redisClient.on('error', err => console.error(`Could not connect to Redis: ${err}`))
 	console.log("Connected as " + client.user.tag);  // Confirm connection
 	client.user.setPresence({activity: {name: 'Type "!help" to get all commands'}});
 
@@ -503,8 +503,9 @@ client.once('ready', async () => {
 	oocMessages2 = oocMessages2.filter(message => (message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
 	oocMessages2.forEach(async (message) => {
 		// For each image in ooc, add its ID to a set and store the image as a hash
-		await redisClient.sAdd("messageIds", message.id);
-		await redisClient.hSet(`${message.id}`, "imageUrl", message.attachments[0].attachment.url);
+		console.log(message.attachments.first().attachment.toString())
+		await redisClient.sAdd("messageIds", `${message.id}`);
+		await redisClient.hSet(`${message.id}`, "imageUrl", message.attachments.first().attachment.toString());
 	});
 	
 	console.log("Ready to take commands!");
