@@ -1,5 +1,3 @@
-const { assuredworkloads } = require("googleapis/build/src/apis/assuredworkloads")
-
 module.exports = {
 	name: "ooc",
 	help: `\`!ooc\`
