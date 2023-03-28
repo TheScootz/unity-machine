@@ -360,7 +360,11 @@ client.once('ready', async () => {
 
 			if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
 				const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
-				member.send(CTEMessage);
+				try {
+					member.send(CTEMessage);
+				} catch (e) {
+					console.err(`Error contacting ${member.id}: ${e}`);
+				}
 	
 				if (memberRoles.includes(assemblianRole)) { // User is marked as Assemblian
 					member.roles.remove(assemblianRole);
