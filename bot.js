@@ -11,6 +11,7 @@ moment = require('moment');
 mongo = Promise.promisifyAll(require('mongodb'));
 path = require('path');
 Papa = require('papaparse');
+redis = require('redis')
 schedule = require('node-schedule');
 const striptags = require('striptags');
 const xml2js = require('xml2js');
@@ -48,6 +49,9 @@ MongoClient.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true}
 	(async () => pronouns = (await dbo.collection("pronouns").findOne({"id": "pronouns"})).pronouns)(); // Array of all available pronouns
 	//(async () => nonWAElectoralCitizens = (await dbo.collection("nonWAElectoralCitizens").findOne({"id": "nonWAElectoralCitizens"})).nonWAElectoralCitizens)(); // Array of all non-WA Electoral Citizens of TLA
 });
+
+// Initialise Redis
+redisClient = redis.createClient();
 
 // Initialise Google API
 youtube = google.youtube({
@@ -251,6 +255,13 @@ client.on('messageCreate', async msg => {
 		return;
 	}
 
+	// Adds ooc image to cache
+	if (msg.channelId === IDS.channels.ooc && msg.attachments.size === 1 && isImage(msg.attachments.first().attachment)) {
+		console.log(msg.attachments.first().attachment)
+		await redisClient.sAdd("messageIds", msg.id);
+		await redisClient.hSet(msg.id, "ImageUrl", msg.attachments.first().attachment);
+	}
+
 	// Received message starts with bot prefix
 	if (msg.content.startsWith(botPrefix)) {
 		const fullCommand = msg.content.substr(botPrefix.length); // Remove the leading bot prefix
@@ -278,8 +289,20 @@ client.on('messageCreate', async msg => {
 	}
 });
 
+// Message has been deleted
+client.on('messageDelete', async (msg) => {
+	// Checks if it is in cache
+	if (await redisClient.sIsMember("messageIds", msg.id) === 1) {
+		await redisClient.sRem("messageIds", msg.id)
+		await redisClient.hDel(msg.id, "imageUrl")
+	}
+})
+
 // Client is connected to Discord
 client.once('ready', async () => {
+	// Connect Redis client
+	await redisClient.connect();
+	redisClient.on('error', err => console.error(`Could not connect to Redis: ${err}`))
 	console.log("Connected as " + client.user.tag);  // Confirm connection
 	client.user.setPresence({activity: {name: 'Type "!help" to get all commands'}});
 
@@ -473,10 +496,20 @@ client.once('ready', async () => {
 	// Delete text-only messages in #out-of-context
 	const oocChannel = TLAServer.channels.cache.find(channel => channel.name === "out-of-context"); // Channel for OOC posts
 	let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
+	let oocMessages2 = oocMessages;
 	// Filter out all mesages with one image
 	oocMessages = oocMessages.filter(message => !(message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
 	oocMessages = oocMessages.filter(message => ! message.pinned); // Filter out all pinned messages
 	oocMessages.forEach(message => message.delete()); // Delete all messages
+
+	// Add all OOC images to cache
+	oocMessages2 = oocMessages2.filter(message => (message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
+	oocMessages2.forEach(async (message) => {
+		// For each image in ooc, add its ID to a set and store the image as a hash
+		console.log(message.attachments.first().attachment.toString())
+		await redisClient.sAdd("messageIds", `${message.id}`);
+		await redisClient.hSet(`${message.id}`, "imageUrl", message.attachments.first().attachment.toString());
+	});
 	
 	console.log("Ready to take commands!");
 });
