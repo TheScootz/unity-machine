@@ -459,13 +459,21 @@ client.once('ready', async () => {
 		if (reminderDate > new Date()) {
 			schedule.scheduleJob(reminderDate, async () => {
 				const object = await scheduledReminders.findOne(reminder);
-				user.send(`Reminder: ${reminder.message}`);
+				try {
+					user.send(`Reminder: ${reminder.message}`);
+				} catch (e) {
+					console.err(`Error contacting ${user.id}: ${e}`);
+				}
 				scheduledReminders.deleteOne(object);
 			});
 
 		// Send reminder if reminder is due before current date and time
 		} else {
-			user.send(`Reminder: ${reminder.message}`);
+			try {
+				user.send(`Reminder: ${reminder.message}`);
+			} catch (e) {
+				console.err(`Error contacting ${user.id}: ${e}`);
+			}
 			scheduledReminders.deleteOne(reminder);
 		}
 	});
