@@ -351,6 +351,7 @@ client.once('ready', async () => {
 		if (item.time) { // Unverified/CTEd
 			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
 				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
+			}
 			return;
 		}
 
