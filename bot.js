@@ -345,13 +345,12 @@ client.once('ready', async () => {
 	// Iterate through all members. This will add them all to the cache as well.
 	(await TLAServer.members.list({ limit: 1000 })).forEach(async member => {
 		item = await userCollections.findOne({ id: member.id })
-		if (! item) return; // member is bot
+		if (!item || member.id == NKVD_ID) return; // member is bot
 		const memberRoles = Array.from(member.roles.cache.values()); // Roles of member
 
 		if (item.time) { // Unverified/CTEd
 			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
 				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
-			}
 			return;
 		}
 
