@@ -482,6 +482,7 @@ client.once('ready', async () => {
 		}
 	});
 
+	/*
 	// Delete text-only messages in #out-of-context
 	const oocChannel = TLAServer.channels.cache.find(channel => channel.name === "out-of-context"); // Channel for OOC posts
 	let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
@@ -489,6 +490,7 @@ client.once('ready', async () => {
 	oocMessages = oocMessages.filter(message => !(message.attachments.size === 1 && isImage(message.attachments.first().attachment)));
 	oocMessages = oocMessages.filter(message => ! message.pinned); // Filter out all pinned messages
 	oocMessages.forEach(message => message.delete()); // Delete all messages
+	*/
 	
 	console.log("Ready to take commands!");
 });
