@@ -212,18 +212,22 @@ updateCounter = async () => {
 		Offline: 0
 	};
 	pronouns.forEach(role => rolesCount[role] = 0);
-	(await TLAServer.members.list({ limit: 1000 })).forEach(member => {
-		for (var role in rolesCount) {
-			if (member.roles.cache.find(r => r.name === role)) { // User has role
-				rolesCount[role]++;
+	try {
+		(await TLAServer.members.list({ limit: 1000 })).forEach(member => {
+			for (var role in rolesCount) {
+				if (member.roles.cache.find(r => r.name === role)) { // User has role
+					rolesCount[role]++;
+				}
 			}
-		}
-		if (member.presence && member.presence.status === "offline") {
-			rolesCount.Offline++;
-		} else {
-			rolesCount.Online++;
-		}
-	});
+			if (member.presence && member.presence.status === "offline") {
+				rolesCount.Offline++;
+			} else {
+				rolesCount.Online++;
+			}
+		});
+	} catch (err) {
+		console.error(`Unable to update counter. Error: ${err}`);
+    }
 
 	const discordEmbed = new Discord.MessageEmbed()
 		.setColor('#ce0001')
