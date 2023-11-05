@@ -13,6 +13,12 @@ module.exports = {
 		oocMessages = oocMessages.filter(message => message.attachments.size === 1); // Only include oocMessages with one attachment
 		oocMessages = oocMessages.map(message => message.attachments.first().attachment); // Only include the url of a message's attachment
 		oocMessages = oocMessages.filter(messageAttachmentURL => isImage(messageAttachmentURL)); // Only include images
-		msg.channel.send({files: [getRandomObject(oocMessages)]}); // Send random image from message url array
+		try {
+			msg.channel.send({ files: [getRandomObject(oocMessages)] }); // Send random image from message url array
+		} catch (err) {
+			msg.channel.send(`An unexpected error occured: \`${err}\``);
+			console.log("ooc error: verification failed: " + err);
+			return;
+		}
 	}
 }
