@@ -12,6 +12,7 @@ module.exports = {
 		let oocMessages = await getMessages(oocChannel); // Get all messages in #out-of-context
 		oocMessages = oocMessages.filter(message => message.attachments.size === 1); // Only include oocMessages with one attachment
 		oocMessages = oocMessages.map(message => message.attachments.first().attachment); // Only include the url of a message's attachment
+		oocMessages = oocMessages.map(message => message.replace(/(.+)\?.*/, "$1"));
 		oocMessages = oocMessages.filter(messageAttachmentURL => isImage(messageAttachmentURL)); // Only include images
 		try {
 			msg.channel.send({ files: [getRandomObject(oocMessages)] }); // Send random image from message url array
