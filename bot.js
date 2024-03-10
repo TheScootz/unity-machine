@@ -546,7 +546,7 @@ client.on("guildMemberAdd", async newMember => {
 	newMember.roles.add(unverifiedRole); // Add unverified role
 	const welcomeMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "welcomeMessage.txt"), "utf-8")); // eval is used to add interpolation for text in welcomeMessage.txt
 	try {
-		newMember.user.send(welcomeMessage);
+		await newMember.user.send(welcomeMessage);
 	} catch (e) {
 		console.err(`Error contacting ${newMember.id}: ${e}`);
     }
