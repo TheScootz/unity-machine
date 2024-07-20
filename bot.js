@@ -172,9 +172,13 @@ writeAndSend = async (msg, filename, data) => {
 	//stream = fs.createWriteStream(filename)
 	//data.forEach(async content => await stream.write(content));
 
-	await fs.writeFile(filename, data, err => { if (err) console.error(err); });
-	await msg.channel.send({files: [filename]});
-	fs.unlink(filename, err => {if (err) console.error(err);}); // console.error any error if any
+	try {
+		await fs.writeFile(filename, data, err => { if (err) console.error(err); });
+		await msg.channel.send({ files: [filename] });
+		fs.unlink(filename, err => { if (err) console.error(err); }); // console.error any error if any
+	} catch (err) {
+		msg.channel.send(`Error sending file: \`${err}\``);
+	}
 }
 
 // Read file and split by newline
