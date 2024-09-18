@@ -4,6 +4,6 @@
 2. Click 'Copy to clipboard'
 3. Type the following into this DM channel: \`!verifyme [nation] [token]\`. For example, '!verifyme unity_machine hdiicu_57chjnd_e_qg21bv2b_k'.
 
-Warning: You have one week to re-verify yourself, or you will be kicked from the server!
+Warning: You have one week to re-verify yourself, or you will be kicked from the server! This does not apply to members with the **Assemblian Community** role.
 
-Contact Scootz#9999 or telegram New Arkados if you have any questions.`
+Contact scootz_ or telegram New Arkados if you have any questions.`

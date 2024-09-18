@@ -348,6 +348,7 @@ client.once('ready', async () => {
 	const verifiedRole = await TLAServer.roles.fetch(IDS.roles.verified);
 	const assemblianRole = await TLAServer.roles.fetch(IDS.roles.assemblian);
 	const visitorRole = await TLAServer.roles.fetch(IDS.roles.visitor);
+	const communityRole = await TLAServer.roles.fetch(IDS.roles.community);
 	const CTERole = await TLAServer.roles.fetch(IDS.roles.CTE);
 
 	// Iterate through all members. This will add them all to the cache as well.
@@ -356,9 +357,10 @@ client.once('ready', async () => {
 		if (!item || member.id == process.env.NKVD_ID) return; // member is bot
 		const memberRoles = Array.from(member.roles.cache.values()); // Roles of member
 
-		if (item.time) { // Unverified/CTEd
+		if (item.time && !memberRoles.includes(communityRole)) { // Unverified/CTEd
 			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
-				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.");
+				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.")
+					.catch((e) => console.log(`Error kicking ${member.id}: ${e}`));
 			}
 			return;
 		}
