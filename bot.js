@@ -373,7 +373,7 @@ client.once('ready', async () => {
 				try {
 					member.send(CTEMessage);
 				} catch (e) {
-					console.err(`Error contacting ${member.id}: ${e}`);
+					console.error(`Error contacting ${member.id}: ${e}`);
 				}
 	
 				if (memberRoles.includes(assemblianRole)) { // User is marked as Assemblian
@@ -472,7 +472,7 @@ client.once('ready', async () => {
 				try {
 					user.send(`Reminder: ${reminder.message}`);
 				} catch (e) {
-					console.err(`Error contacting ${user.id}: ${e}`);
+					console.error(`Error contacting ${user.id}: ${e}`);
 				}
 				scheduledReminders.deleteOne(object);
 			});
@@ -482,7 +482,7 @@ client.once('ready', async () => {
 			try {
 				user.send(`Reminder: ${reminder.message}`);
 			} catch (e) {
-				console.err(`Error contacting ${user.id}: ${e}`);
+				console.error(`Error contacting ${user.id}: ${e}`);
 			}
 			scheduledReminders.deleteOne(reminder);
 		}
@@ -554,7 +554,7 @@ client.on("guildMemberAdd", async newMember => {
 	try {
 		await newMember.user.send(welcomeMessage);
 	} catch (e) {
-		console.err(`Error contacting ${newMember.id}: ${e}`);
+		console.error(`Error contacting ${newMember.id}: ${e}`);
     }
 	userCollections.insertOne({id: newMember.id.toString(), nation: null, time: new Date().getTime()});
 	updateCounter();
