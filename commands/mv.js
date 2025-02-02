@@ -2,7 +2,7 @@ module.exports = {
 	name: "mv",
 	help: `\`!mv [userid] [Nation]\`
 
-**Usage:** The specified nation name must have the spaces replaced with underscores. The token can be found here: https://www.nationstates.net/page=verify_login
+**Usage:** Requires the ID of the discord user being verified (available with developer mode).
 **Details:** The command associates a discord user with a nation, bypassing the verification process. If the nation is in The Leftist Assembly, they will be given the Assemblian role. Otherwise, they will be given the Visitor role. Admin command only.
 **Examples:**
 \`!mv 149994630564282368 new_arkados\``,
