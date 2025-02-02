@@ -88,6 +88,6 @@ module.exports = {
 
 		const foyer = client.channels.cache.find(channel => channel.name === "foyer");
 		await foyer.send(`@here Welcome ${msg.author.toString()} to The Leftist Assembly Discord Server!`);
-		await foyer.send(`${msg.author.toString()}, please remember to check out our server rules at ${TLAServer.channels.cache.find(channel => channel.name === 'server-rules').toString()}, add pronouns using \`!addpronoun\` and find available pronouns via \`!listpronouns\`.`);
+		await foyer.send(`${msg.author.toString()}, please remember to check out our server rules at ${TLAServer.channels.cache.find(channel => channel.name === 'information').toString()}, add pronouns using \`!addpronoun\` and find available pronouns via \`!listpronouns\`.`);
 	}
 }
