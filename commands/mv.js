@@ -5,7 +5,7 @@ module.exports = {
 **Usage:** The specified nation name must have the spaces replaced with underscores. The token can be found here: https://www.nationstates.net/page=verify_login
 **Details:** The command associates a discord user with a nation, bypassing the verification process. If the nation is in The Leftist Assembly, they will be given the Assemblian role. Otherwise, they will be given the Visitor role. Admin command only.
 **Examples:**
-\`!verifyme 149994630564282368 new_arkados\``,
+\`!mv 149994630564282368 new_arkados\``,
 	
 	async execute(msg, args) {
         const issuer = await TLAServer.members.fetch(msg.author.id);
