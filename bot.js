@@ -360,7 +360,7 @@ client.once('ready', async () => {
 		if (item.time && !memberRoles.includes(communityRole)) { // Unverified/CTEd
 			if (moment().diff(moment(Number(item.time)), 'hours') >= 168) {
 				member.kick("Sorry, you were unverified or marked as CTE for over 1 week.")
-					.catch((e) => console.log(`Error kicking ${member.id}: ${e}`));
+					.catch((e) => console.error(`Error kicking ${member.id}: ${e}`));
 			}
 			return;
 		}
@@ -370,11 +370,7 @@ client.once('ready', async () => {
 
 			if ((! nations.some(nation => nation === rawNation)) && memberRoles.includes(verifiedRole)) { // User has CTEd but not marked as CTE yet
 				const CTEMessage = eval(await fs.readFileAsync(path.join(__dirname, "data", "cteMessage.txt"), "utf-8")); // Add interpolation for text in cteMessage.txt
-				try {
-					member.send(CTEMessage);
-				} catch (e) {
-					console.error(`Error contacting ${member.id}: ${e}`);
-				}
+				member.send(CTEMessage).catch((e) => console.error(`Error contacting ${member.id}: ${e}`));
 	
 				if (memberRoles.includes(assemblianRole)) { // User is marked as Assemblian
 					member.roles.remove(assemblianRole);

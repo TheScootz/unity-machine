@@ -1,3 +1,0 @@
-praw==7.1.0
-matplotlib==3.3.2
-
