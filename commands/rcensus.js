@@ -21,7 +21,7 @@ module.exports = {
 
 		numRequests ++;
 		let censusID = args[0]
-		const region = args.length === 1 ? "the_leftist_assembly" : args[1];
+		const region = args.length === 1 ? IDS.region : args[1];
 		
 		if (! (Number.isInteger(Number(censusID)) && ((0 <= censusID && censusID <= 86) ||Number(censusID) === 255))) { // Census ID 255 refers to number of nations in a region
 			msg.channel.send(`Error: Invalid Census ID "${censusID}". ${helpPrimaryCommand}`);

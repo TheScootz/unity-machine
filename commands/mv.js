@@ -60,8 +60,8 @@ module.exports = {
 		const WACitizenRole = await TLAServer.roles.fetch(IDS.roles.WACitizen);
 
 		await guildMember.roles.add(verifiedRole);
-		await guildMember.roles.add(responseObject.region === "The Leftist Assembly" ? assemblianRole : visitorRole);
-		if (responseObject.region === "The Leftist Assembly" && responseObject.wa === "WA Member") {
+		await guildMember.roles.add(responseObject.region === IDS.region_proper ? assemblianRole : visitorRole);
+		if (responseObject.region === IDS.region_proper && responseObject.wa === "WA Member") {
 			await guildMember.roles.add(WACitizenRole);
 		}
 		await guildMember.roles.remove(guildMember.roles.cache.find(role => role.name === "Unverified") ? unverifiedRole : CTERole); // If Unverified role is found, remove it, else remove CTE role

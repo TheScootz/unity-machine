@@ -19,7 +19,7 @@ module.exports = {
 		numRequests += 3;
 
 
-		const region = args.length === 0 ? "The Leftist Assembly" : args.join(' ');
+		const region = args.length === 0 ? IDS.region_proper : args.join(' ');
 		const regionLink = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=name+numnations+delegate+founder+founded+foundedtime+power+flag`;
 		
 		try {

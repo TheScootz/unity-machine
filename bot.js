@@ -312,7 +312,7 @@ client.once('ready', async () => {
 	}
 	nations = nations[0].split(',');
 
-	const TLANationsLink = "https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=nations"; // All TLA nations
+	const TLANationsLink = `https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=nations`; // All TLA nations
 	const WANationsLink = "https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=members"; // All WA Nations
 
 	try {
@@ -409,15 +409,15 @@ client.once('ready', async () => {
 
 	// Update statistics used for Comrade Index
 	links = [
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=6",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=7",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=27",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=28",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=29",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=57",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=71",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=73",
-		"https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=75"
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=6`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=7`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=27`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=28`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=29`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=57`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=71`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=73`,
+		`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=75`
 	]
 	maxTLA = []
 	// Get top score of each census in TLA
@@ -432,14 +432,14 @@ client.once('ready', async () => {
 
 	try {
 		// Get number of nations in TLA
-		var numNations = await getRequest("https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=numnations");
+		var numNations = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=numnations`);
 	} catch (err) {	
 		console.error(`Unable to reach NationStates API. Error code: ${err}`);
 		return;
 	}
 	let place = Number(numNations[0]);
 	do {
-		const link = `https://www.nationstates.net/cgi-bin/api.cgi?region=the_leftist_assembly&q=censusranks;scale=51;start=${place}`;
+		const link = `https://www.nationstates.net/cgi-bin/api.cgi?region=${IDS.region}&q=censusranks;scale=51;start=${place}`;
 		try {
 			var corruption = await getRequest(link);
 		} catch (err) {

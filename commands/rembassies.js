@@ -15,7 +15,7 @@ module.exports = {
 		}
 		numRequests ++;
 
-		const region = args.length === 0 ? "The Leftist Assembly" : args.join(' ');
+		const region = args.length === 0 ? IDS.region : args.join(' ');
 
 		const link = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=embassies`;
 		try {

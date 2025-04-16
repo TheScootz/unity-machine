@@ -14,7 +14,7 @@ module.exports = {
 		}
 		numRequests += 8;
 
-		let region = args.length === 0 ? "The Leftist Assembly" : args.join(' ');
+		let region = args.length === 0 ? IDS.region : args.join(' ');
 		try {
 			var delegate = (await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=delegate`))[0];
 		} catch (err) {
