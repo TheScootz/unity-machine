@@ -188,6 +188,8 @@ openFile = async filename => {
 	return fileContent;
 }
 
+
+
 (async () => {
 	trophies = await openFile("trophies.txt");
 	trophies[255] = "mostnations"; // Census no. 255 is Number of Nations
@@ -493,6 +495,8 @@ client.once('ready', async () => {
 	oocMessages = oocMessages.filter(message => ! message.pinned); // Filter out all pinned messages
 	oocMessages.forEach(message => message.delete()); // Delete all messages
 	*/
+
+	// Set up manual recruitment
 	
 	console.log("Ready to take commands!");
 });
@@ -562,6 +566,77 @@ client.on("guildMemberRemove", member => {
 	scheduledReminders.deleteMany({"id": member.id}); // Delete all reminders
 	updateCounter();
 });
+
+//////// MANUAL RECRUITMENT
+activeRecruiters = [];	// List of members currently recruiting
+recruitQueue = [];	// List of nations pending recruitment
+recruitChecked = [];	// List of nations that have already recently been checked for recruitment
+lastRecruitCheck = 0;//Math.floor(Date.now()/1000);	// Timestamp of last new nation founding check
+
+// Shorten a URL
+shortenUrl = async url => {
+	return new Promise(async (resolve, reject) => {
+		const options = {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'X-Api-Key': process.env.SHLINK_API_KEY
+			},
+			body: JSON.stringify({
+				"longUrl": url,
+				"domain": process.env.SHLINK_DOMAIN
+			})
+		};
+		const res = await fetch(`http://${process.env.SHLINK_DOMAIN}/rest/v3/short-urls`, options); // Response message
+		// Client or Server error
+		if (! res.ok) reject(`${res.status} ${res.statusText}`); // Reject promise with HTTP status code
+		const body = await res.json(); // Message body of response
+		resolve(body.shortUrl);
+	});
+}
+
+processRecruitment = async () => {
+	if (activeRecruiters.length == 0) return;
+
+	if (numRequests + 1 > 50) {
+		console.log("Too many requests, passing manual recruitment check.");
+		return;
+	}
+	numRequests += 1;
+
+	let foundings = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?q=happenings;filter=founding;limit=20`, true);
+	await Promise.all(foundings.WORLD.HAPPENINGS.EVENT.map(async evnt => {
+		let nation = /^@@([\w-]+)@@/.exec(evnt.TEXT)[1];
+		if (recruitChecked.includes(nation)) return;
+
+		let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
+		// console.log(canRecruit);
+		recruitChecked.push(nation);
+		if (canRecruit.NATION.TGCANRECRUIT == "1")
+			recruitQueue.push(nation);
+	}));
+
+	recruitChecked = recruitChecked.slice(0, 50);	// Only keep the last 50 nations checked
+	let alreadyRecruited = [];	// Recruiters that have been given a telegram this cycle
+
+	while (recruitQueue.length >= 8) {
+		if (activeRecruiters.length == 0) break;
+		console.log(recruitQueue);
+
+		let recruiter = activeRecruiters.shift();
+		let recruiting = recruitQueue.slice(0, 8).join("%2C");
+		shortenUrl(`https://www.nationstates.net/page=compose_telegram?tgto=${recruiting}&message=${encodeURIComponent(recruiter[1])}&generated_by=unity_machine`)
+			.then(async url => recruiter[0].send(`[Click here to send a recruitment telegram](${url})`));
+		alreadyRecruited.push(recruiter);
+		recruitQueue = recruitQueue.slice(8);
+	}
+
+	console.log(recruitQueue);
+	activeRecruiters.push(...alreadyRecruited);
+}
+
+schedule.scheduleJob('0 */3 * * * *', processRecruitment);
+
 
 console.log("Discord.js version " + Discord.version);
 client.login(process.env.BOT_TOKEN);
