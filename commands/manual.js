@@ -1,6 +1,6 @@
 module.exports = {
-	name: "manualrecruit",
-	aliases: ['manual', 'mr', 'recruit'],
+	name: "manual",
+	aliases: ['mr', 'recruit'],
 	help: `\`!manual [command] [params]\`
 
 **Aliases:** \`!manual, !mr, !recruit\`
@@ -195,7 +195,7 @@ module.exports = {
                 break;
             
             default:
-                msg.channel.send(`Unrecognized subcommand. See \`${helpPrimaryCommand} manualrecruit\``);
+                msg.channel.send(`Unrecognized subcommand. See \`${helpPrimaryCommand} manual\``);
         }
 	}
 }
