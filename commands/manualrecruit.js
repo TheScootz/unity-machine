@@ -7,8 +7,12 @@ module.exports = {
 **Usage:**  Manual recruitment procedures.
 **Details:** This command has several subcommands:
 \`authorize [@user] [template]\`
+\`deauthorize [@user]\`
+\`lb\`
+\`now\`
 \`recruit\`
 \`template\`
+\`week\`
 **Examples:**
 `,
 	async execute(msg, args) {
@@ -78,28 +82,85 @@ module.exports = {
 
                 break;
             
+            case "lb":
+                const lbEmbed = new Discord.MessageEmbed()
+                    .setColor('#ce0001')
+                    .setTitle('Top recruiters all time')
+                    .setTimestamp();
+                
+                let totalCounts = await userCollections.find({"recruitCount": {$gt: 0}}, {sort: {"recruitCount": -1}});
+                let total = 0;
+                if (totalCounts.count() == 0) {
+                    lbEmbed.setDescription('None!');
+                } else {
+                    let list = "";
+                    for await (member of totalCounts) {
+                        list += `<@${member.id}> -- ${member.recruitCount} nations\n`;
+                        total += member.recruitCount;
+                    }
+                    lbEmbed.setDescription(list);
+                }
+
+                lbEmbed.addFields({name: "Total", value: `${total} nations`});
+                msg.channel.send({ embeds: [lbEmbed] });
+                break;
+            
+            case "now":
+                const discordEmbed = new Discord.MessageEmbed()
+			        .setColor('#ce0001')
+                    .setTitle('Currently recruiting')
+                    .setTimestamp();
+                
+                let recruiters = recruitCounts.keys().toArray().sort((a, b) => recruitCounts.get(b) - recruitCounts.get(a))
+                
+                if (recruiters.length == 0) {
+                    discordEmbed.setDescription('None!');
+                } else {
+                    let list = "";
+                    recruiters.forEach(id => list += `<@${id}> -- ${recruitCounts.get(id)} nations\n`);
+                    discordEmbed.setDescription(list);
+                }
+
+                discordEmbed.addFields({name: "Queue length", value: `${recruitStack.length} nations`});
+                msg.channel.send({ embeds: [discordEmbed] });
+                break;
+            
             case "recruit":
                 nation = await userCollections.findOne({id: guildMember.id});
                 if (!nation.manualTemplate) {
                     msg.channel.send("You have not been authorized for manual recruiting.");
                     return;
                 }
+
+                // if ();
+
                 console.log(nation.manualTemplate);
                 activeRecruiters.push([guildMember, nation.manualTemplate]);
-                guildMember.send("You have been added to the queue for manual recruitment. You will be sent premade links to create recruitment telegrams. When you receive them, all you have to do is open the link and click Send. Make sure you are logged in to your verified nation.");// Once you have sent the telegram, react with ✅ to confirm you've sent it. When you are done, react with ❌.");
+                recruitCounts.set(guildMember.id, 0);
+                guildMember.send("You have been added to the queue for manual recruitment. You will be sent premade links to create recruitment telegrams. When you receive them, all you have to do is open the link and click Send. Make sure you are logged in to your verified nation.");// React with ❌ at any time to leave the queue.")
+                    // .then(async msg => {
+                    //     msg.awaitReactions({filter: (reaction, user) => (reaction.emoji.name === '❌' && user.id === recruiter.id), max: 1})
+                    //         .then(() => {
+                    //             let rIdx = activeRecruiters.findIndex(r => r[0].id === msg.author.id);
+                    //             if (rIdx !== undefined) {
+                    //                 activeRecruiters.splice(rIdx, 1);
+                    //                 recruiter.send("You have been removed from the manual recruitment queue. You may rejoin at any time.");
+                    //             }
+                    //         })
+                    // });
 
                 break;
             
-            case "stop":
-                let recruiterIndex = activeRecruiters.findIndex(recruiter => recruiter[0].id === msg.author.id);
-                if (recruiterIndex >= 0) {
-                    activeRecruiters.splice(recruiterIndex, 1);
-                    msg.channel.send("You have been removed from the manual recruitment queue.");
-                } else {
-                    msg.channel.send("You are not in the manual recruitment queue.");
-                }
+            // case "stop":
+            //     let recruiterIndex = activeRecruiters.findIndex(recruiter => recruiter[0].id === msg.author.id);
+            //     if (recruiterIndex >= 0) {
+            //         activeRecruiters.splice(recruiterIndex, 1);
+            //         msg.channel.send("You have been removed from the manual recruitment queue.");
+            //     } else {
+            //         msg.channel.send("You are not in the manual recruitment queue.");
+            //     }
 
-                break;
+            //     break;
 
             case "template":
                 nation = await userCollections.findOne({id: guildMember.id});
@@ -110,8 +171,31 @@ module.exports = {
 
                 break;
             
+            case "week":
+                const weeklyEmbed = new Discord.MessageEmbed()
+			        .setColor('#ce0001')
+                    .setTitle('Top recruiters this week')
+                    .setTimestamp();
+                
+                let weeklyCounts = await userCollections.find({"recruitWeek": {$gt: 0}}, {sort: {"recruitWeek": -1}});
+                let totalWeek = 0;
+                if (weeklyCounts.count() == 0) {
+                    weeklyEmbed.setDescription('None!');
+                } else {
+                    let list = "";
+                    for await (member of weeklyCounts) {
+                        list += `<@${member.id}> -- ${member.recruitWeek} nations\n`;
+                        totalWeek += member.recruitWeek;
+                    }
+                    weeklyEmbed.setDescription(list);
+                }
+
+                weeklyEmbed.addFields({name: "Total", value: `${totalWeek} nations`});
+                msg.channel.send({ embeds: [weeklyEmbed] });
+                break;
+            
             default:
-                msg.channel.send(`Unrecognized subcommand. See ${helpPrimaryCommand}`);
+                msg.channel.send(`Unrecognized subcommand. See \`${helpPrimaryCommand} manualrecruit\``);
         }
 	}
 }

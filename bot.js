@@ -69,7 +69,8 @@ client = new Discord.Client({
 		Discord.Intents.FLAGS.GUILD_PRESENCES,
 		Discord.Intents.FLAGS.GUILD_MESSAGES,
 		Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-		Discord.Intents.FLAGS.DIRECT_MESSAGES
+		Discord.Intents.FLAGS.DIRECT_MESSAGES,
+		Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
 	],
 	partials: ['MESSAGE', 'CHANNEL', 'REACTION']
 });
@@ -569,9 +570,10 @@ client.on("guildMemberRemove", member => {
 
 //////// MANUAL RECRUITMENT
 activeRecruiters = [];	// List of members currently recruiting
-recruitQueue = [];	// List of nations pending recruitment
+recruitStack = [];	// List of nations pending recruitment
 recruitChecked = [];	// List of nations that have already recently been checked for recruitment
-lastRecruitCheck = 0;//Math.floor(Date.now()/1000);	// Timestamp of last new nation founding check
+pendingRecruit = new Map();	// Recruiters that have an active unconfirmed recruitment telegram, and their nations
+recruitCounts = new Map();	// Recruitments this session
 
 // Shorten a URL
 shortenUrl = async url => {
@@ -595,48 +597,103 @@ shortenUrl = async url => {
 	});
 }
 
-processRecruitment = async () => {
-	if (activeRecruiters.length == 0) return;
-
-	if (numRequests + 1 > 50) {
-		console.log("Too many requests, passing manual recruitment check.");
+updateRecruitStack = async () => {
+	if (numRequests + 21 > 50) {
+		console.log("Too many requests, passing updateRecruitStack.");
 		return;
 	}
-	numRequests += 1;
+	numRequests += 21;
 
-	let foundings = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?q=happenings;filter=founding;limit=20`, true);
-	await Promise.all(foundings.WORLD.HAPPENINGS.EVENT.map(async evnt => {
-		let nation = /^@@([\w-]+)@@/.exec(evnt.TEXT)[1];
-		if (recruitChecked.includes(nation)) return;
+	try {
+		let foundings = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?q=happenings;filter=founding;limit=20`, true);
+		await Promise.all(foundings.WORLD.HAPPENINGS.EVENT.map(async evnt => {
+			let nation = /^@@([\w-]+)@@/.exec(evnt.TEXT)[1];
+			if (recruitChecked.includes(nation)) return;
 
-		let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
-		// console.log(canRecruit);
-		recruitChecked.push(nation);
-		if (canRecruit.NATION.TGCANRECRUIT == "1")
-			recruitQueue.push(nation);
-	}));
-
-	recruitChecked = recruitChecked.slice(0, 50);	// Only keep the last 50 nations checked
-	let alreadyRecruited = [];	// Recruiters that have been given a telegram this cycle
-
-	while (recruitQueue.length >= 8) {
-		if (activeRecruiters.length == 0) break;
-		console.log(recruitQueue);
-
-		let recruiter = activeRecruiters.shift();
-		let recruiting = recruitQueue.slice(0, 8).join("%2C");
-		shortenUrl(`https://www.nationstates.net/page=compose_telegram?tgto=${recruiting}&message=${encodeURIComponent(recruiter[1])}&generated_by=unity_machine`)
-			.then(async url => recruiter[0].send(`[Click here to send a recruitment telegram](${url})`));
-		alreadyRecruited.push(recruiter);
-		recruitQueue = recruitQueue.slice(8);
+			let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
+			// console.log(canRecruit);
+			recruitChecked.push(nation);
+			if (canRecruit.NATION.TGCANRECRUIT == "1")
+				recruitStack.push(nation);
+		}));
+		recruitChecked.splice(0, 25);	// Only keep the last 25 nations checked
+	} catch (e) {
+		console.error(`Error updating recruits: ${e}`);
 	}
-
-	console.log(recruitQueue);
-	activeRecruiters.push(...alreadyRecruited);
 }
 
-schedule.scheduleJob('0 */3 * * * *', processRecruitment);
+processRecruitment = async() => {
+	// if (activeRecruiters.length == 0) return;
+	console.log("--------");
+	console.log("activeRecruiters: " + activeRecruiters);
+	console.log("recruitStack: " + recruitStack);
+	console.log("pendingRecruit: " + pendingRecruit.entries().toArray());
 
+	updateRecruitStack();
+	let alreadyRecruited = [];	// Recruiters that have been given a telegram this cycle
+
+	while (recruitStack.length >= 8) {
+		if (activeRecruiters.length == 0) break;
+
+		let recruitment = activeRecruiters.shift();
+		let recruiter = recruitment[0];
+		let template = recruitment[1];
+		let recruiting = recruitStack.splice(-8);
+
+		shortenUrl(`https://www.nationstates.net/page=compose_telegram?tgto=${recruiting.join("%2C")}&message=${encodeURIComponent(template)}&generated_by=unity_machine`)
+			.then(async url => recruiter.send(`[Click here to send a recruitment telegram](${url}). React with ✅ once it's sent, and/or ❌ to stop recruiting.`))
+			.then(async msg => {
+				pendingRecruit.set(recruiter, recruiting);
+				
+				// If user reacts with ✅ first, process it and continue to listen for ❌
+				// If user reacts with ❌ first, put the nations back in the stack and do not listen for ✅
+				// After 20 minutes with no reaction, same result as reacting ❌ 
+				msg.awaitReactions({filter: (reaction, user) => (['✅', '❌'].includes(reaction.emoji.name) && user.id === recruiter.id), max: 1, time: 12000, errors: ['time']})
+					.then(collected => {
+						if (collected.size == 0) return;
+						if (collected.first().emoji.name === '✅') {
+							userCollections.updateOne({"id": recruiter.id}, {"$inc": {"recruitCount": 8, "recruitWeek": 8}});
+							recruitCounts.set(recruiter.id, recruitCounts.get(recruiter.id) + 8);
+							pendingRecruit.delete(recruiter);
+							activeRecruiters.push([recruiter, template]);
+							msg.awaitReactions({filter: (reaction, user) => (reaction.emoji.name === '❌' && user.id === recruiter.id), max: 1, time: 1200000})
+								.then(() => {
+									let rIdx = activeRecruiters.findIndex(r => r[0].id === recruiter.id);
+									activeRecruiters.splice(rIdx, 1);
+									recruitCounts.delete(recruiter.id);
+									recruiter.send("You have been removed from the manual recruitment queue. You may rejoin at any time.");
+								})
+								.catch(err => console.error("Error sending message: " + err));
+						} else if (collected.first().emoji.name === '❌') {
+							recruitStack.unshift(...pendingRecruit.get(recruiter));
+							pendingRecruit.delete(recruiter);
+							recruitCounts.delete(recruiter.id);
+							recruiter.send("You have been removed from the manual recruitment queue. You may rejoin at any time.")
+								.catch(err => console.error("Error sending message: " + err));
+						}
+					})
+					.catch(() => {
+						recruitStack.unshift(...pendingRecruit.get(recruiter));
+						pendingRecruit.delete(recruiter);
+						recruitCounts.delete(recruiter.id);
+						recruiter.send("You have been inactive for 20 minutes and have been removed from the manual recruitment queue. You may rejoin at any time.");
+					});
+
+				msg.react('✅');
+				msg.react('❌');
+			})
+			.catch(err => {
+				recruitCounts.delete(recruiter.id);
+				recruiter.send(`There has been an error and you have been removed from the manual recruitment queue. Please report this error: \`${err}\``);
+			})
+			.catch(err => console.error("Error sending message: " + err));
+	}
+
+	recruitStack = recruitStack.slice(-2000);	// Only keep the top 2000 nations on the stack
+}
+
+schedule.scheduleJob('*/3 * * * *', processRecruitment);
+schedule.scheduleJob('0 0 * * 0', () => userCollections.updateMany({}, {"$set": {"recruitWeek" : 0}}));
 
 console.log("Discord.js version " + Discord.version);
 client.login(process.env.BOT_TOKEN);
