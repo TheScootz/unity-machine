@@ -616,7 +616,7 @@ updateRecruitStack = async () => {
 			if (canRecruit.NATION.TGCANRECRUIT == "1")
 				recruitStack.push(nation);
 		}));
-		recruitChecked.splice(0, 25);	// Only keep the last 25 nations checked
+		recruitChecked = recruitChecked.slice(-25);	// Only keep the last 25 nations checked
 	} catch (e) {
 		console.error(`Error updating recruits: ${e}`);
 	}
@@ -627,6 +627,7 @@ processRecruitment = async() => {
 	console.log("--------");
 	console.log("activeRecruiters: " + activeRecruiters);
 	console.log("recruitStack: " + recruitStack);
+	console.log("recruitChecked: " + recruitChecked);
 	console.log("pendingRecruit: " + pendingRecruit.entries().toArray());
 
 	updateRecruitStack();
@@ -648,7 +649,7 @@ processRecruitment = async() => {
 				// If user reacts with ✅ first, process it and continue to listen for ❌
 				// If user reacts with ❌ first, put the nations back in the stack and do not listen for ✅
 				// After 20 minutes with no reaction, same result as reacting ❌ 
-				msg.awaitReactions({filter: (reaction, user) => (['✅', '❌'].includes(reaction.emoji.name) && user.id === recruiter.id), max: 1, time: 12000, errors: ['time']})
+				msg.awaitReactions({filter: (reaction, user) => (['✅', '❌'].includes(reaction.emoji.name) && user.id === recruiter.id), max: 1, time: 1200000, errors: ['time']})
 					.then(collected => {
 						if (collected.size == 0) return;
 						if (collected.first().emoji.name === '✅') {
