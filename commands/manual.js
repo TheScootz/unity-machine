@@ -21,6 +21,11 @@ module.exports = {
 			return;
 		}
 
+        if (msg.channel.name !== "manual-recruitment" && args[0] !== "lb" && args[0] !== "week" && args[0] !== "now") {
+            msg.channel.send("This command can only be used in the manual recruitment channel.");
+            return;
+        }
+
         const guildMember = await TLAServer.members.fetch(msg.author);
 
         if ((args[0] === "authorize" || args[0] === "deauthorize")
@@ -110,8 +115,8 @@ module.exports = {
 			        .setColor('#ce0001')
                     .setTitle('Currently recruiting')
                     .setTimestamp();
-                
-                let recruiters = recruitCounts.keys().toArray().sort((a, b) => recruitCounts.get(b) - recruitCounts.get(a))
+                    
+                let recruiters = Array.from(recruitCounts.keys()).sort((a, b) => recruitCounts.get(b) - recruitCounts.get(a))
                 
                 if (recruiters.length == 0) {
                     discordEmbed.setDescription('None!');
