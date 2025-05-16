@@ -69,7 +69,8 @@ client = new Discord.Client({
 		Discord.Intents.FLAGS.GUILD_PRESENCES,
 		Discord.Intents.FLAGS.GUILD_MESSAGES,
 		Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-		Discord.Intents.FLAGS.DIRECT_MESSAGES
+		Discord.Intents.FLAGS.DIRECT_MESSAGES,
+		Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
 	],
 	partials: ['MESSAGE', 'CHANNEL', 'REACTION']
 });
@@ -187,6 +188,8 @@ openFile = async filename => {
 	fileContent = fileContent.split('\n');
 	return fileContent;
 }
+
+
 
 (async () => {
 	trophies = await openFile("trophies.txt");
@@ -493,6 +496,8 @@ client.once('ready', async () => {
 	oocMessages = oocMessages.filter(message => ! message.pinned); // Filter out all pinned messages
 	oocMessages.forEach(message => message.delete()); // Delete all messages
 	*/
+
+	// Set up manual recruitment
 	
 	console.log("Ready to take commands!");
 });
@@ -562,6 +567,147 @@ client.on("guildMemberRemove", member => {
 	scheduledReminders.deleteMany({"id": member.id}); // Delete all reminders
 	updateCounter();
 });
+
+//////// MANUAL RECRUITMENT
+activeRecruiters = [];	// List of members currently recruiting
+recruitStack = [];	// List of nations pending recruitment
+recruitChecked = [];	// List of nations that have already recently been checked for recruitment
+pendingRecruit = new Map();	// Recruiters that have an active unconfirmed recruitment telegram, and their nations
+recruitCounts = new Map();	// Recruitments this session
+
+// Shorten a URL
+shortenUrl = async url => {
+	return new Promise(async (resolve, reject) => {
+		const options = {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'X-Api-Key': process.env.SHLINK_API_KEY
+			},
+			body: JSON.stringify({
+				"longUrl": url,
+				"domain": process.env.SHLINK_DOMAIN
+			})
+		};
+		const res = await fetch(`http://${process.env.SHLINK_DOMAIN}/rest/v3/short-urls`, options); // Response message
+		// Client or Server error
+		if (! res.ok) reject(`${res.status} ${res.statusText}`); // Reject promise with HTTP status code
+		const body = await res.json(); // Message body of response
+		resolve(body.shortUrl);
+	});
+}
+
+updateRecruitStack = async () => {
+	if (numRequests + 21 > 50) {
+		console.log("Too many requests, passing updateRecruitStack.");
+		return;
+	}
+	numRequests += 21;
+
+	try {
+		try {
+			let foundings = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?q=happenings;filter=founding;limit=20`, true);
+			await Promise.all(foundings.WORLD.HAPPENINGS.EVENT.map(async evnt => {
+				let nation = /^@@([\w-]+)@@/.exec(evnt.TEXT)[1];
+				if (recruitChecked.includes(nation)) return;
+
+				let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
+				// console.log(canRecruit);
+				recruitChecked.push(nation);
+				if (canRecruit.NATION.TGCANRECRUIT == "1")
+					recruitStack.push(nation);
+			}));
+		} catch (err) {
+			console.error(`Error connecting to NS: ${err}`);
+		}
+		recruitChecked = recruitChecked.slice(-25);	// Only keep the last 25 nations checked
+	} catch (e) {
+		console.error(`Error updating recruits: ${e}`);
+	}
+}
+
+processRecruitment = async() => {
+	// if (activeRecruiters.length == 0) return;
+	// console.log("--------");
+	// console.log("activeRecruiters: " + activeRecruiters);
+	// console.log("recruitStack: " + recruitStack);
+	// console.log("recruitChecked: " + recruitChecked);
+	// console.log("pendingRecruit: " + pendingRecruit.entries().toArray());
+
+	updateRecruitStack();
+	let alreadyRecruited = [];	// Recruiters that have been given a telegram this cycle
+
+	while (recruitStack.length >= 8) {
+		if (activeRecruiters.length == 0) break;
+
+		let recruitment = activeRecruiters.shift();
+		let recruiter = recruitment[0];
+		let template = recruitment[1];
+		let recruiting = recruitStack.splice(-8);
+
+		shortenUrl(`https://www.nationstates.net/page=compose_telegram?tgto=${recruiting.join("%2C")}&message=${encodeURIComponent(template)}&generated_by=unity_machine`)
+			.then(async url => recruiter.send(`[Click here to send a recruitment telegram](${url}). React with ✅ once it's sent, and/or ❌ to stop recruiting.`))
+			.then(async msg => {
+				pendingRecruit.set(recruiter, recruiting);
+				const timeoutReminder = msg.createReactionCollector({filter: (reaction, user) => (reaction.emoji.name === '✅' && user.id === recruiter.id), max: 1, time: 600000})
+				timeoutReminder.on('end', (collected, reason) => { 
+					if (reason === "time") {
+						recruiter.send("You have been inactive for 10 minutes. At 20 minutes of inactivity, you will be removed from the queue.")
+							.catch(err => console.error("Error sending message: " + err));
+					}
+				});
+				
+				// If user reacts with ✅ first, process it and continue to listen for ❌
+				// If user reacts with ❌ first, put the nations back in the stack and do not listen for ✅
+				// After 20 minutes with no reaction, same result as reacting ❌ 
+				msg.awaitReactions({filter: (reaction, user) => (['✅', '❌'].includes(reaction.emoji.name) && user.id === recruiter.id), max: 1, time: 1200000})
+					.then(collected => {
+						if (collected.size == 0) {
+							recruitStack.unshift(...pendingRecruit.get(recruiter));
+							pendingRecruit.delete(recruiter);
+							recruitCounts.delete(recruiter.id);
+							recruiter.send("You have been inactive for 20 minutes and have been removed from the manual recruitment queue. You may rejoin at any time.");	
+							return;
+						}
+						timeoutReminder.stop();
+						if (collected.first().emoji.name === '✅') {
+							userCollections.updateOne({"id": recruiter.id}, {"$inc": {"recruitCount": 8, "recruitWeek": 8}});
+							recruitCounts.set(recruiter.id, recruitCounts.get(recruiter.id) + 8);
+							pendingRecruit.delete(recruiter);
+							activeRecruiters.push([recruiter, template]);
+							msg.awaitReactions({filter: (reaction, user) => (reaction.emoji.name === '❌' && user.id === recruiter.id), max: 1, time: 1200000})
+								.then(collected => {
+									if (collected.size == 0) return;
+									let rIdx = activeRecruiters.findIndex(r => r[0].id === recruiter.id);
+									activeRecruiters.splice(rIdx, 1);
+									recruitCounts.delete(recruiter.id);
+									recruiter.send("You have been removed from the manual recruitment queue. You may rejoin at any time.");
+								})
+								.catch(err => console.error("Error sending message: " + err));
+						} else if (collected.first().emoji.name === '❌') {
+							recruitStack.unshift(...pendingRecruit.get(recruiter));
+							pendingRecruit.delete(recruiter);
+							recruitCounts.delete(recruiter.id);
+							recruiter.send("You have been removed from the manual recruitment queue. You may rejoin at any time.")
+								.catch(err => console.error("Error sending message: " + err));
+						}
+					});
+
+				msg.react('✅');
+				msg.react('❌');
+			})
+			.catch(err => {
+				recruitCounts.delete(recruiter.id);
+				recruiter.send(`There has been an error and you have been removed from the manual recruitment queue. Please report this error: \`${err}\``);
+			})
+			.catch(err => console.error("Error sending message: " + err));
+	}
+
+	recruitStack = recruitStack.slice(-2000);	// Only keep the top 2000 nations on the stack
+}
+
+schedule.scheduleJob('*/3 * * * *', processRecruitment);
+schedule.scheduleJob('0 0 * * 0', () => userCollections.updateMany({}, {"$set": {"recruitWeek" : 0}}));
 
 console.log("Discord.js version " + Discord.version);
 client.login(process.env.BOT_TOKEN);
