@@ -45,7 +45,7 @@ module.exports = {
                 let templateCode;
 
                 try {
-                    userid = /^<@(\d{17,18})>$/.exec(args[1])[1];
+                    userid = /^<@(\d+)>$/.exec(args[1])[1];
                     nation = userCollections.findOne({id: userid}).then(object => object.nation);
                 } catch (e) {
                     msg.channel.send(`Error: Could not read user. Make sure you @ ping them, and that they are in the server and verified.`);
@@ -71,7 +71,7 @@ module.exports = {
                 }
 
                 try {
-                    userid = /^<@(\d{17,18})>$/.exec(args[1])[1];
+                    userid = /^<@(\d+)>$/.exec(args[1])[1];
                     nation = await userCollections.findOne({id: userid});
                 } catch (e) {
                     msg.channel.send(`Error: Could not read user. Make sure you @ ping them, and that they are in the server and verified.`);
