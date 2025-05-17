@@ -139,7 +139,6 @@ module.exports = {
 
                 // if ();
 
-                console.log(nation.manualTemplate);
                 activeRecruiters.push([guildMember, nation.manualTemplate]);
                 recruitCounts.set(guildMember.id, 0);
                 guildMember.send("You have been added to the queue for manual recruitment. You will be sent premade links to create recruitment telegrams. When you receive them, all you have to do is open the link and click Send. Make sure you are logged in to your verified nation.");// React with ❌ at any time to leave the queue.")
