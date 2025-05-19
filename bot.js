@@ -610,13 +610,14 @@ updateRecruitStack = async () => {
             await Promise.all(foundings.WORLD.HAPPENINGS.EVENT.map(async evnt => {
                 let nation = /^@@([\w-]+)@@/.exec(evnt.TEXT)[1];
                 if (recruitChecked.includes(nation)) return;
-
                 
-                let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
-                // console.log(canRecruit);
+                // Screen puppets (nations ending with a number)
+                if (!/\s\d+$/.test(nation)) {
+                    let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
+                    if (canRecruit.NATION.TGCANRECRUIT == "1")
+                        recruitStack.push(nation);
+                }
                 recruitChecked.push(nation);
-                if (canRecruit.NATION.TGCANRECRUIT == "1")
-                    recruitStack.push(nation);
             }));
         } catch (err) {
             console.error(`Error connecting to NS: ${err}`);
