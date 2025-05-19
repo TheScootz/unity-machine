@@ -265,7 +265,7 @@ client.on('messageCreate', async msg => {
     // Received message starts with bot prefix
     if (msg.content.startsWith(botPrefix)) {
         const fullCommand = msg.content.substr(botPrefix.length); // Remove the leading bot prefix
-        const splitCommand = fullCommand.split(/\w+/); // Split the message up in to pieces for each space
+        const splitCommand = fullCommand.split(/\s+/); // Split the message up in to pieces for each space
         const primaryCommand = splitCommand[0].toLowerCase(); // The first word directly after the exclamation is the command
         let args = splitCommand.slice(1); // All other words are args/parameters/options for the command
     
