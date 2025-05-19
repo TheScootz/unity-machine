@@ -17,7 +17,7 @@ const xml2js = require('xml2js');
 ytdl = require('ytdl-core');
 
 const botPrefix = "!";
-const version = "2.3.0"; // Version
+const version = "2.4.0"; // Version
 PROD_GUILD = "256222023993393152";
 
 numRequests = 0;
@@ -611,6 +611,7 @@ updateRecruitStack = async () => {
 				let nation = /^@@([\w-]+)@@/.exec(evnt.TEXT)[1];
 				if (recruitChecked.includes(nation)) return;
 
+                
 				let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
 				// console.log(canRecruit);
 				recruitChecked.push(nation);

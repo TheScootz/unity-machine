@@ -44,10 +44,10 @@ module.exports = {
                 
                 let templateCode;
 
-                try {
-                    userid = /^<@(\d+)>$/.exec(args[1])[1];
+
+                userid = /^<@(\d+)>$/.exec(args[1])[1];
                     nation = userCollections.findOne({id: userid}).then(object => object.nation);
-                } catch (e) {
+                if (userid === null) {
                     msg.channel.send(`Error: Could not read user. Make sure you @ ping them, and that they are in the server and verified.`);
                     return;
                 }
@@ -60,7 +60,7 @@ module.exports = {
                 }
 
                 userCollections.updateOne({"id": userid}, {"$set": {"manualTemplate": templateCode}});
-                msg.channel.send(`<@${userid}> is now able to send manual recruitment telegrams for ${IDS.region_proper}. To get started, use \`!mr recruit\``);
+                msg.channel.send(`<@${userid}> is now able to send manual recruitment telegrams for ${IDS.region_proper}. To get started, use \`!manual recruit\``);
 
                 break;
             
@@ -199,7 +199,7 @@ module.exports = {
                 break;
             
             default:
-                msg.channel.send(`Unrecognized subcommand. See \`${helpPrimaryCommand} manual\``);
+                msg.channel.send(`Unrecognized subcommand. ${helpPrimaryCommand}`);
         }
 	}
 }
