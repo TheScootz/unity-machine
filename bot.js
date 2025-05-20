@@ -591,9 +591,11 @@ shortenUrl = async url => {
         };
         const res = await fetch(`http://${process.env.SHLINK_DOMAIN}/rest/v3/short-urls`, options); // Response message
         // Client or Server error
-        console.error(`Error shortening link: ${res.json()}`);
-        if (!res.ok) reject(`${res.status} ${res.statusText}`); // Reject promise with HTTP status code
         const body = await res.json(); // Message body of response
+        if (!res.ok) {
+            console.error(`Error shortening link: ${body}`);
+            reject(`${res.status} ${res.statusText}`); // Reject promise with HTTP status code
+        }
         resolve(body.shortUrl);
     });
 }
