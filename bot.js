@@ -17,7 +17,7 @@ const xml2js = require('xml2js');
 ytdl = require('ytdl-core');
 
 const botPrefix = "!";
-const version = "2.4.0"; // Version
+const version = "2.4.1"; // Version
 PROD_GUILD = "256222023993393152";
 
 numRequests = 0;
@@ -613,7 +613,7 @@ updateRecruitStack = async () => {
                 if (recruitChecked.includes(nation)) return;
                 
                 // Screen puppets (nations ending with a number)
-                if (!/\s\d+$/.test(nation)) {
+                if (!/[_-](\d+|[ivxlcdm]+)$/.test(nation)) {
                     let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
                     if (canRecruit.NATION.TGCANRECRUIT == "1")
                         recruitStack.push(nation);
