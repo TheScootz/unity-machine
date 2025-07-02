@@ -711,8 +711,15 @@ processRecruitment = async() => {
     recruitStack = recruitStack.slice(-2000);   // Only keep the top 2000 nations on the stack
 }
 
+resetRecruitWeek = async() => {
+    userCollections.updateMany({}, [
+        {"$set": { "recruitWeekLast": "$recruitWeek"}},
+        {"$set": {"recruitWeek" : 0}}
+    ]);
+}
+
 schedule.scheduleJob('*/3 * * * *', processRecruitment);
-schedule.scheduleJob('0 0 * * 0', () => userCollections.updateMany({}, {"$set": {"recruitWeek" : 0}}));
+schedule.scheduleJob('0 0 * * 0', () => resetRecruitWeek);
 
 console.log("Discord.js version " + Discord.version);
 client.login(process.env.BOT_TOKEN);
