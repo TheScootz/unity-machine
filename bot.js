@@ -713,13 +713,13 @@ processRecruitment = async() => {
 
 resetRecruitWeek = async() => {
     userCollections.updateMany({}, [
-        {"$set": { "recruitWeekLast": "$recruitWeek"}},
-        {"$set": {"recruitWeek" : 0}}
+        {"$set": { "recruitWeekLast": "$recruitWeek" }},
+        {"$set": { "recruitWeek" : 0 }}
     ]);
 }
 
 schedule.scheduleJob('*/3 * * * *', processRecruitment);
-schedule.scheduleJob('0 0 * * 0', () => resetRecruitWeek);
+schedule.scheduleJob('0 0 * * 0', resetRecruitWeek);
 
 console.log("Discord.js version " + Discord.version);
 client.login(process.env.BOT_TOKEN);

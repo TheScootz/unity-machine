@@ -8,6 +8,7 @@ module.exports = {
 **Details:** This command has several subcommands:
 \`authorize [@user] [template]\`
 \`deauthorize [@user]\`
+\`last\`
 \`lb\`
 \`now\`
 \`recruit\`
@@ -21,7 +22,7 @@ module.exports = {
 			return;
 		}
 
-        if (msg.channel.name !== "manual-recruitment" && args[0] !== "lb" && args[0] !== "week" && args[0] !== "now") {
+        if (msg.channel.name !== "manual-recruitment" && args[0] !== "lb" && args[0] !== "week" && args[0] !== "now" && args[0] !== "prev") {
             msg.channel.send("This command can only be used in the manual recruitment channel.");
             return;
         }
@@ -85,6 +86,29 @@ module.exports = {
                     msg.channel.send("That user is currently not authorized for manual recruiting.");
                 }
 
+                break;
+
+            case "last":
+                const prevEmbed = new Discord.MessageEmbed()
+			        .setColor('#ce0001')
+                    .setTitle('Top recruiters last week')
+                    .setTimestamp();
+                
+                let prevCounts = await userCollections.find({"recruitWeekLast": {$gt: 0}}, {sort: {"recruitWeekLast": -1}});
+                let totalPrev = 0;
+                if (prevCounts.count() == 0) {
+                    prevEmbed.setDescription('None!');
+                } else {
+                    let list = "";
+                    for await (member of prevCounts) {
+                        list += `<@${member.id}> -- ${member.recruitWeekLast} nations\n`;
+                        totalPrev += member.recruitWeekLast;
+                    }
+                    prevEmbed.setDescription(list);
+                }
+
+                prevEmbed.addFields({name: "Total", value: `${totalPrev} nations`});
+                msg.channel.send({ embeds: [prevEmbed] });
                 break;
             
             case "lb":
