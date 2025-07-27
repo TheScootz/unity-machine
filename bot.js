@@ -593,7 +593,7 @@ shortenUrl = async url => {
         // Client or Server error
         const body = await res.json(); // Message body of response
         if (!res.ok) {
-            console.error(`Error shortening link: ${body}`);
+            console.error(`Error shortening link: ` + JSON.stringify(body));
             reject(`${res.status} ${res.statusText}`); // Reject promise with HTTP status code
         }
         resolve(body.shortUrl);
