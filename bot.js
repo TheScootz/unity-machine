@@ -615,7 +615,7 @@ updateRecruitStack = async () => {
                 if (recruitChecked.includes(nation)) return;
                 
                 // Screen puppets (nations ending with a number)
-                if (!/(\d+|[ivxlcdm]+)$/.test(nation)) {
+                if (!/(\d+|[_-][ivxlcdm]+)$/.test(nation)) {
                     let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
                     if (canRecruit.NATION.TGCANRECRUIT == "1")
                         recruitStack.push(nation);
