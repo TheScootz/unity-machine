@@ -615,7 +615,7 @@ updateRecruitStack = async () => {
                 if (recruitChecked.includes(nation)) return;
                 
                 // Screen puppets (nations ending with a number)
-                if (!/[_-](\d+|[ivxlcdm]+)$/.test(nation)) {
+                if (!/(\d+|[ivxlcdm]+)$/.test(nation)) {
                     let canRecruit = await getRequest(`https://www.nationstates.net/cgi-bin/api.cgi?nation=${nation}&q=tgcanrecruit;from=${IDS.region}`, true);
                     if (canRecruit.NATION.TGCANRECRUIT == "1")
                         recruitStack.push(nation);
@@ -718,7 +718,7 @@ resetRecruitWeek = async() => {
     ]);
 }
 
-schedule.scheduleJob('*/3 * * * *', processRecruitment);
+schedule.scheduleJob('* * * * *', processRecruitment);
 schedule.scheduleJob('0 0 * * 0', resetRecruitWeek);
 
 console.log("Discord.js version " + Discord.version);
